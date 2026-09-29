@@ -1,0 +1,87 @@
+import { useState, type FormEvent } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { useAdminAuth } from './AdminAuthContext';
+
+export function AdminLoginPage() {
+  const { token, login } = useAdminAuth();
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  if (token) return <Navigate to="/admin/dashboard" replace />;
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+    try {
+      await login(email.trim(), password);
+      navigate('/admin/dashboard', { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-stone-100 px-4">
+      <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-lg">
+        <div className="mb-6 text-center">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-600">
+            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <circle cx="12" cy="10" r="3" />
+              <path d="M12 13c0 4-2.5 5-2.5 8M12 13c0 4 2.5 5 2.5 8" strokeLinecap="round" />
+            </svg>
+          </span>
+          <h1 className="mt-3 font-display text-xl font-bold text-ink">Admin Login</h1>
+          <p className="mt-1 text-xs text-ink-soft">Glow by Parveen — management area</p>
+        </div>
+
+        <form onSubmit={onSubmit} className="space-y-4" noValidate>
+          <div>
+            <label htmlFor="email" className="label">Email</label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="username"
+              className="input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="label">Password</label>
+            <input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              className="input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          {error ? (
+            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+              {error}
+            </p>
+          ) : null}
+
+          <button type="submit" disabled={busy} className="btn-primary w-full">
+            {busy ? 'Signing in…' : 'Sign In'}
+          </button>
+        </form>
+
+        <p className="mt-6 text-center text-[11px] leading-relaxed text-ink-soft">
+          Protected area. All actions require authentication and are logged.
+        </p>
+      </div>
+    </div>
+  );
+}

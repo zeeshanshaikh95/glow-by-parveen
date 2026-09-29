@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Admin area should not be indexed
+Disallow: /admin
+
+Sitemap: https://glowbyparveen.example.com/sitemap.xml

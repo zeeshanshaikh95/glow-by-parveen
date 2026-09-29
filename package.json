@@ -1,0 +1,27 @@
+{
+  "name": "glow-by-parveen",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Glow by Parveen — natural/herbal beauty brand website (React SPA + Express API + MongoDB)",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,client -c magenta,cyan \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev:server": "npm run dev -w server",
+    "dev:client": "npm run dev -w client",
+    "dev:db": "npm run dev:db -w server",
+    "dev:all": "concurrently -n db,server,client -c yellow,magenta,cyan \"npm run dev:db -w server\" \"npm run dev -w server\" \"npm run dev -w client\"",
+    "build": "npm run build -w client && npm run build -w server",
+    "typecheck": "npm run typecheck -w client && npm run typecheck -w server",
+    "seed": "npm run seed -w server",
+    "seed:reset": "npm run seed:reset -w server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,27 @@
+node_modules/
+dist/
+build/
+*.local
+
+# Local dev database data directory (see server/src/dev/startMongo.ts)
+server/.data/
+.cache/
+
+# Env files — never commit real secrets
+.env
+.env.*
+!.env.example
+
+# Server uploads (user-generated content)
+server/uploads/
+!server/uploads/.gitkeep
+
+logs/
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+coverage/
