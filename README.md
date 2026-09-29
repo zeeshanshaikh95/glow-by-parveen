@@ -48,25 +48,31 @@ Primary conversion: browse → cart → **order on WhatsApp** (no payment gatewa
 
 ## Quick start (local demo)
 
-**Prerequisites:** Node 20+, and MongoDB running locally (`mongodb://127.0.0.1:27017`) or an Atlas URI.
+**Prerequisites:** Node 20+ and MongoDB — either a local/Atlas instance you already have, or the
+bundled dev database (no installation required, see below).
 
 ```bash
 # 1 — install
-npm install                        # root tooling (concurrently)
-npm install --workspaces           # client + server deps
+npm install                        # installs client + server workspaces
 
 # 2 — configure the server
 cp .env.example server/.env
 # → edit server/.env: set MONGODB_URI, JWT_SECRET (long random string),
 #   ADMIN_EMAIL and ADMIN_PASSWORD before any real deployment.
 
-# 3 — seed the database (idempotent; creates admin + placeholder catalogue)
+# 3 — start a database (skip if you already run MongoDB / use Atlas)
+npm run dev:db                     # downloads and runs a real mongod on 127.0.0.1:27017
+                                   # with data persisted in server/.data/mongo
+
+# 4 — seed the database (idempotent; creates admin + placeholder catalogue)
 npm run seed                       # or: npm run seed:reset to wipe catalogue data first
 
-# 4 — run both apps
+# 5 — run the API and the client
 npm run dev
 # Client: http://localhost:5173     API: http://localhost:4000/api/health
 ```
+
+`npm run dev:all` runs the dev database, API and client together in one terminal.
 
 **Admin panel:** `http://localhost:5173/admin` → login with `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `server/.env`.
 
@@ -89,10 +95,24 @@ npm run dev
 | Command | Purpose |
 |---|---|
 | `npm run dev` | Run API + client together (concurrently) |
+| `npm run dev:all` | Dev database + API + client in one command |
+| `npm run dev:db` | Local dev MongoDB (persistent data in `server/.data/mongo`) |
 | `npm run dev:server` / `npm run dev:client` | Run one side |
 | `npm run build` | Typecheck + build both workspaces |
 | `npm run typecheck` | TypeScript project-wide |
 | `npm run seed` / `npm run seed:reset` | Seed database (optionally wiping catalogue data) |
+| `node server/scripts/api-smoke.mjs` | End-to-end API test (54 checks: public + admin CRUD + auth) |
+
+### Verifying the API end-to-end
+
+With the API running and seeded, the smoke test exercises every public endpoint, admin
+authentication/authorization and all admin CRUD surfaces (using clearly marked
+`[SMOKE TEST]` records that it deletes again):
+
+```bash
+node server/scripts/api-smoke.mjs
+# ADMIN_EMAIL=… ADMIN_PASSWORD=… API_URL=https://api.example.com node server/scripts/api-smoke.mjs
+```
 
 ## Environment variables
 

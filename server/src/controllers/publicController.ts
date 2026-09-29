@@ -84,12 +84,9 @@ export const getCategoryBySlug = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Category not found');
   }
 
-  const products = await Product.find({
-    category: category._id,
-    archived: false,
-    stockStatus: 'in_stock',
-  })
-    .sort({ bestseller: -1, featured: -1, displayOrder: 1, createdAt: -1 })
+  // Out-of-stock items stay listed (PRD §8) — the UI disables ordering for them.
+  const products = await Product.find({ category: category._id, archived: false })
+    .sort({ stockStatus: 1, bestseller: -1, featured: -1, displayOrder: 1, createdAt: -1 })
     .lean();
 
   res.json({ category, products });

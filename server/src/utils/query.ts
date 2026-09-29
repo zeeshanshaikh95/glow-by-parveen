@@ -16,11 +16,13 @@ export interface ProductQuery {
   category: string;
   sort: ProductSort;
   includeArchived: boolean;
+  /**
+   * Out-of-stock products stay VISIBLE by default (PRD §8: they may remain
+   * listed but cannot be ordered — the UI disables ordering for them).
+   * Pass onlyInStock=true to hide them entirely.
+   */
   includeOutOfStock: boolean;
 }
-
-const ARCHIVED_NOTE =
-  'Archived products are excluded from all public listings and only visible to admins.';
 
 export function parseProductQuery(q: Record<string, unknown>): ProductQuery {
   const sortParam = String(q.sort ?? 'featured');
@@ -31,7 +33,7 @@ export function parseProductQuery(q: Record<string, unknown>): ProductQuery {
       ? (sortParam as ProductSort)
       : 'featured',
     includeArchived: q.includeArchived === 'true',
-    includeOutOfStock: q.includeOutOfStock === 'true',
+    includeOutOfStock: q.onlyInStock !== 'true',
   };
 }
 
@@ -53,12 +55,14 @@ export function buildProductFilter(query: ProductQuery): FilterQuery<IProduct> {
   return filter;
 }
 
+// "in_stock" sorts before "out_of_stock" alphabetically, so listing it first
+// keeps available products above unavailable ones.
 const SORT_MAP: Record<ProductSort, Record<string, 1 | -1>> = {
-  featured: { featured: -1, displayOrder: 1, createdAt: -1 },
-  bestseller: { bestseller: -1, displayOrder: 1, createdAt: -1 },
-  price_asc: { price: 1, displayOrder: 1 },
-  price_desc: { price: -1, displayOrder: 1 },
-  newest: { createdAt: -1 },
+  featured: { stockStatus: 1, featured: -1, displayOrder: 1, createdAt: -1 },
+  bestseller: { stockStatus: 1, bestseller: -1, displayOrder: 1, createdAt: -1 },
+  price_asc: { price: 1, stockStatus: 1, displayOrder: 1 },
+  price_desc: { price: -1, stockStatus: 1, displayOrder: 1 },
+  newest: { stockStatus: 1, createdAt: -1 },
 };
 
 export function productSort(sort: ProductSort): Record<string, 1 | -1> {

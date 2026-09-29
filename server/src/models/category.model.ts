@@ -21,7 +21,6 @@ const categorySchema = new Schema<ICategory>(
   { timestamps: true }
 );
 
-categorySchema.index({ slug: 1 }, { unique: true });
 categorySchema.index({ displayOrder: 1 });
 
 export const Category: Model<ICategory> =

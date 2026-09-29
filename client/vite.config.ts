@@ -20,6 +20,9 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // Bind all interfaces so both 127.0.0.1 and ::1 work (Windows binds ::1 by
+    // default), and so the mobile-first UI can be tested on a phone over LAN.
+    host: true,
     proxy: {
       // Local dev: proxy /api and /uploads to the Express server.
       '/api': { target: 'http://localhost:4000', changeOrigin: true },

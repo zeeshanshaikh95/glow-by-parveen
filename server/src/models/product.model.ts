@@ -72,7 +72,6 @@ const productSchema = new Schema<IProduct>(
 productSchema.index({ name: 'text', description: 'text' });
 productSchema.index({ category: 1 });
 productSchema.index({ bestseller: 1, featured: 1 });
-productSchema.index({ slug: 1 }, { unique: true });
 
 export const Product: Model<IProduct> =
   mongoose.models.Product ?? model<IProduct>('Product', productSchema);

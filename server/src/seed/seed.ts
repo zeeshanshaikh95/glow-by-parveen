@@ -19,6 +19,7 @@ import {
 } from '../models/index.js';
 import { connectDatabase, disconnectDatabase } from '../config/database.js';
 import { config } from '../config/env.js';
+import { slugify } from '../validation/schemas.js';
 
 const args = process.argv.slice(2);
 const RESET = args.includes('--reset');
@@ -77,18 +78,21 @@ async function seedCategories() {
   const placeholderCategories = [
     {
       name: `${CLIENT_DATA_REQUIRED} — Category 1`,
+      slug: 'category-placeholder-1',
       description: 'Placeholder category. Replace with the real client category.',
       image: '',
       displayOrder: 1,
     },
     {
       name: `${CLIENT_DATA_REQUIRED} — Category 2`,
+      slug: 'category-placeholder-2',
       description: 'Placeholder category. Replace with the real client category.',
       image: '',
       displayOrder: 2,
     },
     {
       name: `${CLIENT_DATA_REQUIRED} — Category 3`,
+      slug: 'category-placeholder-3',
       description: 'Placeholder category. Replace with the real client category.',
       image: '',
       displayOrder: 3,
@@ -119,6 +123,7 @@ async function seedProducts() {
     flags: { bestseller?: boolean; featured?: boolean; outOfStock?: boolean } = {}
   ) => ({
     name,
+    slug: `product-placeholder-${n}`,
     description: CLIENT_DATA_REQUIRED,
     price: null,
     compareAtPrice: null,
