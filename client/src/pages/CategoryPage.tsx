@@ -5,6 +5,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { EmptyState } from '@/components/EmptyState';
 import { Seo } from '@/components/seo/Seo';
 import { FloralDivider } from '@/components/FloralDivider';
+import { WhatsAppButton } from '@/components/WhatsAppButton';
 
 export function CategoryPage() {
   const { slug = '' } = useParams();
@@ -65,8 +66,13 @@ export function CategoryPage() {
               <div className="mt-10">
                 <EmptyState
                   title="No products in this category yet"
-                  description="Check back soon, or browse the full catalogue."
-                  action={<Link to="/shop" className="btn-outline">Browse All Products</Link>}
+                  description="Products will appear here once they're added. In the meantime, message us and we'll help you directly."
+                  action={
+                    <div className="flex flex-wrap justify-center gap-3">
+                      <Link to="/shop" className="btn-outline">Browse All Products</Link>
+                      <WhatsAppButton message="Hi Glow by Parveen! 🌸 I'd like to know what's available." label="Ask on WhatsApp" />
+                    </div>
+                  }
                 />
               </div>
             ) : (

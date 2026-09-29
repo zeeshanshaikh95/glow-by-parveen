@@ -4,6 +4,7 @@ import { publicApi } from '@/api/endpoints';
 import { useApi } from '@/hooks/useApi';
 import { ProductCard } from '@/components/ProductCard';
 import { EmptyState } from '@/components/EmptyState';
+import { WhatsAppButton } from '@/components/WhatsAppButton';
 import { Seo } from '@/components/seo/Seo';
 import { FloralDivider } from '@/components/FloralDivider';
 
@@ -122,12 +123,20 @@ export function ShopPage() {
           ) : products.error ? (
             <EmptyState icon="error" title="Couldn't load products" description={products.error} action={<button className="btn-outline" onClick={() => products.refetch()}>Try again</button>} />
           ) : !products.data?.length ? (
-            <EmptyState
-              icon="search"
-              title={hasFilters ? 'No products match your filters' : 'No products yet'}
-              description={hasFilters ? 'Try a different search term or category.' : 'Products will appear here once added from the admin panel.'}
-              action={hasFilters ? <button className="btn-outline" onClick={() => setSearchParams({})}>Clear filters</button> : undefined}
-            />
+            hasFilters ? (
+              <EmptyState
+                icon="search"
+                title="No products match your filters"
+                description="Try a different search term or category."
+                action={<button className="btn-outline" onClick={() => setSearchParams({})}>Clear filters</button>}
+              />
+            ) : (
+              <EmptyState
+                title="No products available yet"
+                description="Our catalogue is being prepared. Follow us on Instagram or message us on WhatsApp and we'll help you personally."
+                action={<WhatsAppButton message="Hi Glow by Parveen! 🌸 I'd like to know about your products." label="Ask on WhatsApp" />}
+              />
+            )
           ) : (
             <>
               <p className="mb-4 text-xs text-ink-soft" aria-live="polite">

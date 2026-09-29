@@ -16,9 +16,26 @@ export const getAnalytics = asyncHandler(async (req: AuthRequest, res) => {
   const [byType, topProducts, topPaths, topReferrers, totalEvents, productCount] =
     await Promise.all([
       AnalyticsEvent.aggregate([{ $match: match }, { $group: { _id: '$type', count: { $sum: 1 } } }]),
+      // Resolve the product name so the dashboard reads naturally; products that
+      // have since been deleted fall back to their stored slug.
       AnalyticsEvent.aggregate([
         { $match: { ...match, productSlug: { $ne: '' } } },
         { $group: { _id: '$productSlug', count: { $sum: 1 } } },
+        {
+          $lookup: {
+            from: 'products',
+            localField: '_id',
+            foreignField: 'slug',
+            as: 'product',
+          },
+        },
+        {
+          $project: {
+            count: 1,
+            name: { $ifNull: [{ $first: '$product.name' }, '$_id'] },
+            exists: { $gt: [{ $size: '$product' }, 0] },
+          },
+        },
         { $sort: { count: -1 } },
         { $limit: 8 },
       ]),

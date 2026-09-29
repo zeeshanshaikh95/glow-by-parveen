@@ -89,7 +89,7 @@ export function AdminDashboardPage() {
             </div>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-3">
-              <TopList title="Most viewed products" items={summary.topProducts.map((t) => ({ label: t._id, count: t.count }))} emptyText="No product views yet" />
+              <TopList title="Most viewed products" items={summary.topProducts.map((t) => ({ label: t.name ?? t._id, count: t.count }))} emptyText="No product views yet" />
               <TopList title="Top pages" items={summary.topPaths.map((t) => ({ label: t._id, count: t.count }))} emptyText="No traffic yet" />
               <TopList title="Top referrers" items={summary.topReferrers.map((t) => ({ label: t._id || '(direct)', count: t.count }))} emptyText="No referrer data yet" />
             </div>

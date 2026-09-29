@@ -111,7 +111,7 @@ export interface AnalyticsSummary {
     cartAdds: number;
     orderWhatsappClicks: number;
   };
-  topProducts: Array<{ _id: string; count: number }>;
+  topProducts: Array<{ _id: string; name?: string; exists?: boolean; count: number }>;
   topPaths: Array<{ _id: string; count: number }>;
   topReferrers: Array<{ _id: string; count: number }>;
   productCount: number;

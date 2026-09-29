@@ -85,7 +85,7 @@ export function HomePage() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <PlaceholderImage seed="hero" label="Hero image — client photo pending" />
+                <PlaceholderImage seed="hero" />
               )}
             </div>
           </div>
@@ -107,7 +107,12 @@ export function HomePage() {
         ) : categories.error ? (
           <div className="mt-8"><EmptyState icon="error" title="Couldn't load categories" description={categories.error} action={<button className="btn-outline" onClick={() => categories.refetch()}>Try again</button>} /></div>
         ) : !categories.data?.length ? (
-          <div className="mt-8"><EmptyState title="No categories yet" description="Categories will appear here once added from the admin panel." /></div>
+          <div className="mt-8">
+            <EmptyState
+              title="Our categories are on the way"
+              description="We're preparing the collection. Follow us on Instagram or message us on WhatsApp to hear when it launches."
+            />
+          </div>
         ) : (
           <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3">
             {categories.data.map((cat) => (
@@ -125,7 +130,7 @@ export function HomePage() {
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
-                    <PlaceholderImage seed={cat.slug} label="Category image pending" />
+                    <PlaceholderImage seed={cat.slug} />
                   )}
                 </div>
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/70 to-transparent p-4 pt-10">
@@ -153,7 +158,12 @@ export function HomePage() {
           ) : bestsellers.error ? (
             <div className="mt-8"><EmptyState icon="error" title="Couldn't load products" description={bestsellers.error} /></div>
           ) : !bestsellers.data?.length ? (
-            <div className="mt-8"><EmptyState title="No bestsellers yet" description="Mark products as bestsellers from the admin panel to feature them here." /></div>
+            <div className="mt-8">
+              <EmptyState
+                title="No products available yet"
+                description="Our products will appear here as soon as the catalogue is ready."
+              />
+            </div>
           ) : (
             <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
               {bestsellers.data.slice(0, 8).map((p) => <ProductCard key={p._id} product={p} />)}
@@ -205,9 +215,8 @@ export function HomePage() {
               </div>
             ))}
           </div>
-          <p className="mx-auto mt-6 max-w-2xl text-center text-xs italic text-ink-soft/70">
-            [CLIENT DATA REQUIRED — approved benefit claims will replace these neutrally-worded placeholders]
-          </p>
+          {/* NOTE: only neutral, non-medical wording is used above. Replace with the
+              client's approved benefit copy once supplied (PRD §7.6). */}
         </div>
       </section>
 
@@ -218,7 +227,7 @@ export function HomePage() {
             {settings.about.founderImageUrl ? (
               <img src={settings.about.founderImageUrl} alt="Founder of Glow by Parveen" className="h-full w-full object-cover" loading="lazy" />
             ) : (
-              <PlaceholderImage seed="founder" label="Founder photo pending" />
+              <PlaceholderImage seed="founder" />
             )}
           </div>
           <div>
@@ -247,7 +256,12 @@ export function HomePage() {
           {reviews.loading ? (
             <div className="mt-8 grid gap-4 md:grid-cols-3">{[...Array(3)].map((_, i) => <div key={i} className="skeleton h-40" />)}</div>
           ) : !reviews.data?.length ? (
-            <div className="mt-8"><EmptyState title="No reviews yet" description="Approved customer reviews will appear here." /></div>
+            <div className="mt-8">
+              <EmptyState
+                title="No reviews yet"
+                description="Customer reviews will be shared here as soon as they're approved."
+              />
+            </div>
           ) : (
             <div className="mt-8 grid gap-4 md:grid-cols-3">
               {reviews.data.slice(0, 6).map((r) => (
@@ -285,7 +299,7 @@ export function HomePage() {
                   {g.image ? (
                     <img src={g.image} alt={g.caption || 'Instagram post'} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                   ) : (
-                    <PlaceholderImage seed={`ig-${g._id}`} label="Image pending" />
+                    <PlaceholderImage seed={`ig-${g._id}`} />
                   )}
                 </>
               );
@@ -301,7 +315,12 @@ export function HomePage() {
             })}
           </div>
         ) : (
-          <div className="mt-8"><EmptyState title="Gallery coming soon" description="Instagram highlights will be curated here by the team." /></div>
+          <div className="mt-8">
+            <EmptyState
+              title="Instagram gallery coming soon"
+              description="We're curating our favourite posts — follow along on Instagram in the meantime."
+            />
+          </div>
         )}
 
         {settings.instagramUrl ? (

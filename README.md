@@ -39,7 +39,7 @@ Primary conversion: browse → cart → **order on WhatsApp** (no payment gatewa
 │       ├── middleware/     Auth (JWT), errors, rate limits, uploads
 │       ├── models/         Mongoose schemas
 │       ├── routes/         /api and /api/admin routers
-│       ├── seed/           Seed script with [CLIENT DATA REQUIRED] placeholders
+│       ├── seed/           Bootstrap (admin account + settings only — no fake catalogue)
 │       ├── services/       Settings singleton service
 │       ├── utils/          asyncHandler, query helpers
 │       └── validation/     Zod schemas for every write
@@ -64,8 +64,8 @@ cp .env.example server/.env
 npm run dev:db                     # downloads and runs a real mongod on 127.0.0.1:27017
                                    # with data persisted in server/.data/mongo
 
-# 4 — seed the database (idempotent; creates admin + placeholder catalogue)
-npm run seed                       # or: npm run seed:reset to wipe catalogue data first
+# 4 — bootstrap the database (admin account + settings; the catalogue stays EMPTY)
+npm run seed                       # or: npm run seed:reset to clear test records first
 
 # 5 — run the API and the client
 npm run dev
@@ -102,13 +102,13 @@ npm run dev
 | `npm run typecheck` | TypeScript project-wide |
 | `npm run seed` / `npm run seed:reset` | Seed database (optionally wiping catalogue data) |
 | `npm run brand:assets -- <logo.png>` | Re-derive brand assets (transparent logo, favicons, OG image) |
-| `node server/scripts/api-smoke.mjs` | End-to-end API test (54 checks: public + admin CRUD + auth) |
+| `node server/scripts/api-smoke.mjs` | End-to-end API test (74 checks: public + admin CRUD + auth) |
 
 ### Verifying the API end-to-end
 
-With the API running and seeded, the smoke test exercises every public endpoint, admin
-authentication/authorization and all admin CRUD surfaces (using clearly marked
-`[SMOKE TEST]` records that it deletes again):
+The smoke test runs against an EMPTY database: it creates its own clearly marked
+`[SMOKE TEST]` records, exercises every public endpoint, admin authorization and all admin
+CRUD surfaces, then deletes everything it created (including if it crashes):
 
 ```bash
 node server/scripts/api-smoke.mjs
@@ -169,7 +169,7 @@ and Open Graph metadata. Aspect ratio is always preserved.
 
 | Data | Where it is set |
 |---|---|
-| Products, prices, images, variants | Admin → Products (or bulk import via seed script — see docs) |
+| Products, prices, images, variants | Admin → Products (the catalogue stays empty until then) |
 | Categories | Admin → Categories |
 | Reviews | Admin → Reviews (approved status required to display) |
 | WhatsApp number, Instagram, email, Maps | Admin → Settings |
@@ -179,7 +179,7 @@ and Open Graph metadata. Aspect ratio is always preserved.
 
 ## Roadmap to production
 
-1. Replace seeded `[CLIENT DATA REQUIRED]` catalogue via admin panel or seed import.
+1. Add the real catalogue via the admin panel (products, categories, reviews, gallery).
 2. Set WhatsApp number + templates in Admin → Settings.
 3. Configure `CORS_ORIGINS`, `JWT_SECRET`, strong admin password on the host.
 4. Deploy per [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and confirm shipping/policy pages when the client provides them.

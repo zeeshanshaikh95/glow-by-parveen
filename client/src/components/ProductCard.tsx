@@ -43,7 +43,7 @@ export function ProductCard({ product }: Props) {
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
-          <PlaceholderImage seed={product.slug} label="Product image pending" />
+          <PlaceholderImage seed={product.slug} />
         )}
 
         <div className="absolute left-3 top-3 flex flex-col gap-1.5">

@@ -30,7 +30,7 @@ export function AboutPage() {
               className="h-full w-full object-cover"
             />
           ) : (
-            <PlaceholderImage seed="founder" label="Founder photo pending" />
+            <PlaceholderImage seed="founder" />
           )}
         </div>
 

@@ -132,7 +132,7 @@ export function AdminGalleryPage() {
                 {g.image ? (
                   <img src={g.image} alt={g.caption || 'Gallery item'} className="h-full w-full object-cover" />
                 ) : (
-                  <PlaceholderImage seed={`g-${g._id}`} label="Image pending" />
+                  <PlaceholderImage seed={`g-${g._id}`} label="No image" />
                 )}
               </div>
               <div className="p-3">

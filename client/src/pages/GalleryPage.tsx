@@ -41,7 +41,10 @@ export function GalleryPage() {
           </div>
         ) : !data?.length ? (
           <div className="mt-10">
-            <EmptyState title="Gallery coming soon" description="Instagram highlights will be curated here by the team." />
+            <EmptyState
+              title="Instagram gallery coming soon"
+              description="We're curating our favourite posts — follow along on Instagram in the meantime."
+            />
           </div>
         ) : (
           <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -51,7 +54,7 @@ export function GalleryPage() {
                   {g.image ? (
                     <img src={g.image} alt={g.caption || 'Instagram post'} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 hover:scale-105" />
                   ) : (
-                    <PlaceholderImage seed={`ig-${g._id}`} label="Image pending" />
+                    <PlaceholderImage seed={`ig-${g._id}`} />
                   )}
                   {g.caption ? (
                     <p className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/70 to-transparent p-3 pt-8 text-xs font-medium text-white">

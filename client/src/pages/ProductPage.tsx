@@ -174,7 +174,7 @@ export function ProductPage() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <PlaceholderImage seed={product.slug} label="Product image pending" />
+                <PlaceholderImage seed={product.slug} />
               )}
             </button>
 

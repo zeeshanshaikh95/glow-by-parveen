@@ -38,7 +38,7 @@ export function ReviewsPage() {
           <div className="mt-10">
             <EmptyState
               title="No reviews yet"
-              description="Approved customer reviews will appear here. Real testimonials only — nothing is invented."
+              description="Customer reviews will be shared here as soon as they're approved."
             />
           </div>
         ) : (
