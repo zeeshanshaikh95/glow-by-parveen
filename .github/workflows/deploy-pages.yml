@@ -1,0 +1,72 @@
+name: Deploy frontend to GitHub Pages
+
+# Builds the React client and publishes it to GitHub Pages.
+# The Express API + MongoDB are hosted separately (see docs/DEPLOYMENT.md) —
+# point VITE_API_BASE_URL at that host once it is deployed.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'client/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Install only what the client build needs (skips the server workspace).
+      # MONGOMS_DISABLE_POSTINSTALL keeps dev-only mongo tooling out of CI.
+      - name: Install dependencies
+        env:
+          MONGOMS_DISABLE_POSTINSTALL: '1'
+        run: npm ci --workspace client --include-workspace-root
+
+      - name: Build client
+        env:
+          # Project pages are served from /<repo>/ — must match the repo name.
+          VITE_BASE: /${{ github.event.repository.name }}/
+          # Repository variable overrides this once the API has a public host.
+          # Default falls back to a locally running API (dev demo mode).
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'http://localhost:4000' }}
+          VITE_PUBLIC_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+        run: npm run build --workspace client
+
+      # SPA deep links (e.g. /product/xyz) resolve through 404.html on Pages.
+      - name: Add SPA fallback
+        run: cp client/dist/index.html client/dist/404.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: client/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
