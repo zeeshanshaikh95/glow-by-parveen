@@ -58,9 +58,16 @@ function LoadingScreen() {
   );
 }
 
+/**
+ * Vite's BASE_URL is "/" locally and "/<repo>/" on GitHub Pages project sites.
+ * React Router needs that prefix as its basename, otherwise every route (including
+ * "/") fails to match and the app renders the 404 page.
+ */
+const ROUTER_BASENAME = import.meta.env.BASE_URL.replace(/\/$/, '');
+
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={ROUTER_BASENAME}>
       <SettingsProvider>
         <ToastProvider>
           <CartProvider>
