@@ -4,7 +4,7 @@ import { useAdminAuth } from './AdminAuthContext';
 import { LOGO_TRANSPARENT } from '@/lib/brand';
 
 export function AdminLoginPage() {
-  const { token, login } = useAdminAuth();
+  const { token, mustChangePassword, login } = useAdminAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
@@ -12,7 +12,7 @@ export function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  if (token) return <Navigate to="/admin/dashboard" replace />;
+  if (token) return <Navigate to={mustChangePassword ? '/admin/change-password' : '/admin/dashboard'} replace />;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -20,7 +20,8 @@ export function AdminLoginPage() {
     setBusy(true);
     try {
       await login(email.trim(), password);
-      navigate('/admin/dashboard', { replace: true });
+      // Bootstrap admins are forced through a first-login password rotation.
+      navigate(mustChangePassword ? '/admin/change-password' : '/admin/dashboard', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {

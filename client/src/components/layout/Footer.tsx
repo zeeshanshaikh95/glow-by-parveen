@@ -102,6 +102,14 @@ export function Footer() {
         <p className="mt-1">
           Shipping & return policies: <span className="font-semibold">[CLIENT DATA REQUIRED]</span>
         </p>
+        <p className="mt-2">
+          <Link
+            to="/admin/login"
+            className="text-[11px] text-ink-soft/50 underline decoration-transparent underline-offset-2 transition-colors hover:text-ink-soft hover:decoration-current"
+          >
+            Admin Login
+          </Link>
+        </p>
       </div>
     </footer>
   );

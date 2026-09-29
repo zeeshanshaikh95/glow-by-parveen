@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { AdminAuthProvider, useAdminAuth } from './AdminAuthContext';
 import { AdminLoginPage } from './AdminLoginPage';
+import { AdminChangePasswordPage } from './AdminChangePasswordPage';
 import { AdminLayout } from './AdminLayout';
 import { AdminDashboardPage } from './AdminDashboardPage';
 import { AdminProductsPage } from './AdminProductsPage';
@@ -12,9 +13,11 @@ import { AdminSettingsPage } from './AdminSettingsPage';
 
 /** Guards every /admin route — the backend enforces auth independently. */
 function RequireAuth({ children }: { children: JSX.Element }) {
-  const { token, ready } = useAdminAuth();
+  const { token, ready, mustChangePassword } = useAdminAuth();
   if (!ready) return <div className="min-h-screen bg-stone-100" />;
   if (!token) return <Navigate to="/admin/login" replace />;
+  // First-login rotation: block the panel until the bootstrap password is changed.
+  if (mustChangePassword) return <Navigate to="/admin/change-password" replace />;
   return children;
 }
 
@@ -27,6 +30,7 @@ export default function AdminApp() {
     <AdminAuthProvider>
       <Routes>
         <Route path="login" element={<AdminLoginPage />} />
+        <Route path="change-password" element={<AdminChangePasswordPage />} />
         <Route
           path="*"
           element={

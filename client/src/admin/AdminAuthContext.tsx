@@ -1,12 +1,15 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { adminApi } from '@/api/endpoints';
+import { adminApi, type AdminSessionUser } from '@/api/endpoints';
 import { clearAuthToken, getAuthToken, setAuthToken } from '@/auth/token';
 
 interface AdminAuthContextValue {
   token: string | null;
-  admin: { id: string; email: string } | null;
+  admin: AdminSessionUser | null;
+  /** True while bootstrap credentials are still in use — admin panel is locked until rotation. */
+  mustChangePassword: boolean;
   ready: boolean;
   login: (email: string, password: string) => Promise<void>;
+  completePasswordChange: (admin?: AdminSessionUser) => void;
   logout: () => void;
 }
 
@@ -14,7 +17,7 @@ const AdminAuthContext = createContext<AdminAuthContextValue | null>(null);
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(getAuthToken());
-  const [admin, setAdmin] = useState<{ id: string; email: string } | null>(null);
+  const [admin, setAdmin] = useState<AdminSessionUser | null>(null);
   const [ready, setReady] = useState(!getAuthToken());
 
   // Validate an existing token on mount.
@@ -23,9 +26,9 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     adminApi
       .me()
-      .then(({ admin }) => {
+      .then(({ admin: me }) => {
         if (!cancelled) {
-          setAdmin(admin);
+          setAdmin(me);
           setReady(true);
         }
       })
@@ -57,12 +60,22 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     () => ({
       token,
       admin,
+      mustChangePassword: Boolean(admin?.mustChangePassword),
       ready,
       async login(email, password) {
         const { token: newToken, admin: me } = await adminApi.login(email, password);
         setAuthToken(newToken);
         setToken(newToken);
         setAdmin(me);
+      },
+      completePasswordChange(updated) {
+        setAdmin((prev) =>
+          prev
+            ? { ...prev, ...updated, mustChangePassword: false }
+            : updated
+              ? { ...updated, mustChangePassword: false }
+              : prev
+        );
       },
       logout() {
         clearAuthToken();

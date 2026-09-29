@@ -36,6 +36,16 @@ async function seedAdmin() {
   const existing = await AdminUser.findOne({ email: config.adminEmail });
   if (existing) {
     console.log(`• Admin already exists: ${config.adminEmail}`);
+    // Self-heal: if the account still authenticates with the bootstrap password
+    // but the first-login flag was cleared (e.g. by an API smoke run), re-arm it.
+    if (
+      !existing.mustChangePassword &&
+      (await bcrypt.compare(config.adminPassword, existing.passwordHash))
+    ) {
+      existing.mustChangePassword = true;
+      await existing.save();
+      console.log('  ↻ Bootstrap password still in use — first-login password change re-armed.');
+    }
     return;
   }
 
@@ -46,7 +56,13 @@ async function seedAdmin() {
   }
 
   const passwordHash = await bcrypt.hash(config.adminPassword, 12);
-  await AdminUser.create({ email: config.adminEmail, passwordHash, role: 'admin' });
+  await AdminUser.create({
+    email: config.adminEmail,
+    passwordHash,
+    role: 'admin',
+    // Bootstrap credentials (ADMIN_PASSWORD) must be rotated on first login.
+    mustChangePassword: true,
+  });
   console.log(`✓ Admin created: ${config.adminEmail}`);
 }
 

@@ -7,7 +7,28 @@ export interface AuthRequest extends Request {
   admin?: {
     id: string;
     email: string;
+    /** True while bootstrap credentials are still in use. */
+    mustChangePassword: boolean;
   };
+}
+
+/**
+ * Blocks every admin operation until the first-login password change is done.
+ * Mounted after requireAuth, but never on /auth/me and /auth/password.
+ */
+export function requirePasswordChanged(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): void {
+  if (req.admin?.mustChangePassword) {
+    res.status(403).json({
+      error: 'Password change required before using the admin panel',
+      code: 'PASSWORD_CHANGE_REQUIRED',
+    });
+    return;
+  }
+  next();
 }
 
 function extractToken(req: Request): string | null {
@@ -37,13 +58,20 @@ export async function requireAuth(
     };
 
     // Confirm the admin still exists — tokens of deleted accounts are revoked effectively.
-    const admin = await AdminUser.findById(payload.sub).select('_id email').lean();
+    // mustChangePassword rides along so routes can force a first-login password rotation.
+    const admin = await AdminUser.findById(payload.sub)
+      .select('_id email mustChangePassword')
+      .lean();
     if (!admin) {
       res.status(401).json({ error: 'Session is no longer valid' });
       return;
     }
 
-    req.admin = { id: String(admin._id), email: admin.email };
+    req.admin = {
+      id: String(admin._id),
+      email: admin.email,
+      mustChangePassword: Boolean(admin.mustChangePassword),
+    };
     next();
   } catch {
     res.status(401).json({ error: 'Invalid or expired session' });

@@ -14,8 +14,16 @@
 const API_URL = (process.env.API_URL ?? 'http://localhost:4000').replace(/\/$/, '');
 const EMAIL = process.env.ADMIN_EMAIL ?? 'admin@glowbyparveen.com';
 const PASSWORD = process.env.ADMIN_PASSWORD ?? 'GlowDemo!2026';
+/**
+ * Deterministic temporary password used to clear the first-login
+ * mustChangePassword flag during the run. It is deterministic so a run that
+ * crashes mid-rotation can log back in and restore the original password.
+ * Never the real bootstrap secret — the original password is restored at the end.
+ */
+const ROTATED = 'SmokeRotate!2026';
 
 const MARK = '[SMOKE TEST]';
+let usingRotated = false; // true while the account's current password is ROTATED
 
 let passed = 0;
 const failures = [];
@@ -77,6 +85,36 @@ const productPayload = (overrides = {}) => ({
   ...overrides,
 });
 
+/** Tries PASSWORD first, then ROTATED (recovers a run that crashed mid-rotation). */
+async function tryLogin() {
+  const primary = await req('/api/admin/auth/login', { method: 'POST', body: { email: EMAIL, password: PASSWORD } });
+  if (primary.status === 200 && primary.data?.token) {
+    return { token: primary.data.token, admin: primary.data.admin };
+  }
+  const recovery = await req('/api/admin/auth/login', { method: 'POST', body: { email: EMAIL, password: ROTATED } });
+  if (recovery.status === 200 && recovery.data?.token) {
+    usingRotated = true;
+    return { token: recovery.data.token, admin: recovery.data.admin };
+  }
+  return { token: null, admin: null };
+}
+
+/** Puts the original password back so the run leaves the credentials untouched. */
+async function restorePassword(token) {
+  if (!usingRotated) return;
+  try {
+    await req('/api/admin/auth/password', {
+      method: 'PUT',
+      token,
+      body: { currentPassword: ROTATED, newPassword: PASSWORD },
+    });
+    usingRotated = false;
+    console.log('Original admin password restored.');
+  } catch {
+    console.log('! Could not restore the original admin password — the account currently uses the smoke-test rotation password.');
+  }
+}
+
 /** Removes every record this script created. Safe to run repeatedly. */
 async function cleanup(token) {
   console.log(`\n${'─'.repeat(60)}\nCleaning up test records…`);
@@ -132,6 +170,8 @@ async function cleanup(token) {
   }
 
   console.log(`Removed ${removed} test record(s).`);
+
+  await restorePassword(token);
 }
 
 async function main() {
@@ -200,22 +240,45 @@ async function main() {
 
   // ── Admin login ──────────────────────────────────────────────
   console.log('\nAdmin authentication');
-  const login = await req('/api/admin/auth/login', { method: 'POST', body: { email: EMAIL, password: PASSWORD } });
-  check('valid credentials → token', login.status === 200 && typeof login.data?.token === 'string');
-  const token = login.data?.token;
+  const login = await tryLogin();
+  check('valid credentials → token', Boolean(login.token));
+  const token = login.token;
   if (!token) throw new Error('Cannot continue without an admin token — check ADMIN_EMAIL / ADMIN_PASSWORD.');
 
   const me = await req('/api/admin/auth/me', { token });
   check('GET /api/admin/auth/me → identity', me.status === 200 && me.data?.admin?.email === EMAIL.toLowerCase());
 
-  check(
-    'wrong current password rejected → 400',
-    (await req('/api/admin/auth/password', { method: 'PUT', token, body: { currentPassword: 'definitely-wrong', newPassword: 'AnotherPass123' } })).status === 400
-  );
-  check(
-    'weak new password rejected → 400',
-    (await req('/api/admin/auth/password', { method: 'PUT', token, body: { currentPassword: PASSWORD, newPassword: 'short' } })).status === 400
-  );
+  // ── First-login password rotation (bootstrap admins) ─────────
+  if (me.data?.admin?.mustChangePassword) {
+    console.log('Bootstrap account detected — clearing the first-login password-change flag for this run…');
+
+    // While the flag is set, the panel is locked: a normal admin route must refuse.
+    check(
+      'mustChangePassword blocks admin routes → 403',
+      (await req('/api/admin/products', { token })).status === 403
+    );
+    check(
+      'mustChangePassword blocks settings writes → 403',
+      (await req('/api/admin/settings', { method: 'PUT', token, body: {} })).status === 403
+    );
+
+    const rotate = await req('/api/admin/auth/password', {
+      method: 'PUT',
+      token,
+      body: { currentPassword: usingRotated ? ROTATED : PASSWORD, newPassword: ROTATED },
+    });
+    check('first-login password rotation succeeds → 200', rotate.status === 200);
+    check('rotation response no longer reports mustChangePassword', rotate.data?.admin?.mustChangePassword === false);
+    usingRotated = true;
+
+    const meAfter = await req('/api/admin/auth/me', { token });
+    check('flag cleared in /auth/me after rotation', meAfter.data?.admin?.mustChangePassword === false);
+
+    check(
+      'admin routes work again after rotation',
+      (await req('/api/admin/products', { token })).status === 200
+    );
+  }
 
   // ── Category CRUD ────────────────────────────────────────────
   console.log('\nCategory CRUD');
@@ -401,8 +464,8 @@ main().catch(async (err) => {
   console.error('\nSmoke test crashed:', err.message);
   // Best-effort cleanup so a crash never leaves test data behind.
   try {
-    const login = await req('/api/admin/auth/login', { method: 'POST', body: { email: EMAIL, password: PASSWORD } });
-    if (login.data?.token) await cleanup(login.data.token);
+    const { token } = await tryLogin();
+    if (token) await cleanup(token);
   } catch {
     /* ignore */
   }

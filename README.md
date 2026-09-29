@@ -76,6 +76,12 @@ npm run dev
 
 **Admin panel:** `http://localhost:5173/admin` → login with `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `server/.env`.
 
+The first admin is bootstrapped by `npm run seed` from those environment variables (stored as a
+bcrypt hash only — never hardcoded, logged or exposed by the API). A freshly bootstrapped account
+keeps `mustChangePassword` set, so the first login forces a password change before the panel can be
+used; re-running `npm run seed` re-arms the requirement while the bootstrap password is still in use.
+A discreet "Admin Login" link in the public site footer opens the login page.
+
 ### Demo checklist
 
 - Home: hero, category cards, bestsellers, featured, reviews, Instagram gallery, final WhatsApp CTA
@@ -102,7 +108,7 @@ npm run dev
 | `npm run typecheck` | TypeScript project-wide |
 | `npm run seed` / `npm run seed:reset` | Seed database (optionally wiping catalogue data) |
 | `npm run brand:assets -- <logo.png>` | Re-derive brand assets (transparent logo, favicons, OG image) |
-| `node server/scripts/api-smoke.mjs` | End-to-end API test (74 checks: public + admin CRUD + auth) |
+| `node server/scripts/api-smoke.mjs` | End-to-end API test (78 checks: public + admin CRUD + auth + first-login rotation) |
 
 ### Verifying the API end-to-end
 

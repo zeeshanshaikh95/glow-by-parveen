@@ -7,6 +7,22 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { changePasswordSchema, loginSchema } from '../validation/schemas.js';
 import type { AuthRequest } from '../middleware/auth.js';
 
+interface AdminSessionInfo {
+  id: string;
+  email: string;
+  role: string;
+  mustChangePassword: boolean;
+}
+
+function sessionInfo(admin: { _id: unknown; email: string; role: string; mustChangePassword: boolean }): AdminSessionInfo {
+  return {
+    id: String(admin._id),
+    email: admin.email,
+    role: admin.role,
+    mustChangePassword: admin.mustChangePassword,
+  };
+}
+
 function signToken(id: string, email: string): string {
   return jwt.sign({ sub: id, email }, config.jwtSecret, {
     expiresIn: config.jwtExpiresIn,
@@ -38,7 +54,7 @@ export const login = asyncHandler(async (req, res) => {
   const token = signToken(String(admin._id), admin.email);
   res.json({
     token,
-    admin: { id: admin._id, email: admin.email, role: admin.role },
+    admin: sessionInfo(admin),
   });
 });
 
@@ -70,7 +86,12 @@ export const changePassword = asyncHandler(async (req: AuthRequest, res) => {
   }
 
   admin.passwordHash = await bcrypt.hash(newPassword, 12);
+  // The first-login rotation clears the bootstrap-credentials flag.
+  admin.mustChangePassword = false;
   await admin.save();
 
-  res.json({ ok: true });
+  res.json({
+    ok: true,
+    admin: sessionInfo(admin),
+  });
 });

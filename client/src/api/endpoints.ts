@@ -140,15 +140,25 @@ export interface ProductInput {
   archived: boolean;
 }
 
+export interface AdminSessionUser {
+  id: string;
+  email: string;
+  /** True while bootstrap credentials are still in use — forces a password change. */
+  mustChangePassword?: boolean;
+}
+
 export const adminApi = {
   login: (email: string, password: string) =>
-    api.post<{ token: string; admin: { id: string; email: string; role: string } }>(
+    api.post<{ token: string; admin: AdminSessionUser }>(
       '/admin/auth/login',
       { email, password }
     ),
-  me: () => api.get<{ admin: { id: string; email: string } }>('/admin/auth/me'),
+  me: () => api.get<{ admin: AdminSessionUser }>('/admin/auth/me'),
   changePassword: (currentPassword: string, newPassword: string) =>
-    api.put('/admin/auth/password', { currentPassword, newPassword }),
+    api.put<{ ok: boolean; admin?: AdminSessionUser }>('/admin/auth/password', {
+      currentPassword,
+      newPassword,
+    }),
 
   listProducts: () =>
     api.get<{ products: Product[] }>('/admin/products').then((r) => ({

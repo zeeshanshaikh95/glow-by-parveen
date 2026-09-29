@@ -31,7 +31,9 @@ Works on Render / Railway / Fly.io / Glitch free tiers (check current limits).
   - `JWT_SECRET` — long random string (required)
   - `CORS_ORIGINS` — e.g. `https://<user>.github.io,https://<custom-domain>`
   - `PUBLIC_SITE_URL` / `PUBLIC_API_URL` — real URLs
-  - `ADMIN_EMAIL` / `ADMIN_PASSWORD` — strong credentials, then change the password in the admin panel
+  - `ADMIN_EMAIL` / `ADMIN_PASSWORD` — initial bootstrap credentials only: the first seed creates
+    the admin from these (bcrypt-hashed, never hardcoded or logged) and flags the account so the
+    first login forces a password change; rotate via the forced first-login flow
 - **Uploads note:** disk storage is fine for a demo; on ephemeral hosts switch
   `client/src/api/client.ts uploadImages()` + the `/uploads` route to Cloudinary
   (free tier) so images survive redeploys. No code changes needed elsewhere —

@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { loginLimiter, uploadLimiter } from '../middleware/rateLimiters.js';
-import { requireAuth, type AuthRequest } from '../middleware/auth.js';
+import {
+  requireAuth,
+  requirePasswordChanged,
+  type AuthRequest,
+} from '../middleware/auth.js';
 import { uploadImage, uploadsUrlFor } from '../middleware/upload.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../middleware/errors.js';
@@ -53,6 +57,8 @@ router.put('/auth/password', requireAuth, changePassword);
 
 // Everything below requires a valid admin JWT.
 router.use(requireAuth);
+// …and a completed first-login password change (me/password above are exempt).
+router.use(requirePasswordChanged);
 
 // ── Products ────────────────────────────────────────────────────
 router.get('/products', listAdminProducts);
