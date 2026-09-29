@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { useSettings } from '@/context/SettingsContext';
+import { LOGO_TRIMMED } from '@/lib/brand';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Home' },
@@ -30,17 +31,16 @@ export function Header() {
         </div>
       ) : null}
 
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link to="/" className="flex items-center gap-2" aria-label="Glow by Parveen home">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-brand-600">
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <circle cx="12" cy="10" r="3" />
-              <path d="M12 13c0 4-2.5 5-2.5 8M12 13c0 4 2.5 5 2.5 8M9.2 8.5C7.5 9 6.5 10.5 6.5 12M14.8 8.5c1.7.5 2.7 2 2.7 3.5" strokeLinecap="round" />
-            </svg>
-          </span>
-          <span className="font-display text-lg font-bold tracking-tight text-ink">
-            Glow <span className="font-medium text-brand-600">by Parveen</span>
-          </span>
+      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+        {/* Official client logo. Never stretched — aspect ratio preserved. */}
+        <Link to="/" className="flex shrink-0 items-center" aria-label="Glow by Parveen — home">
+          <img
+            src={LOGO_TRIMMED}
+            alt=""
+            width={824}
+            height={824}
+            className="h-14 w-auto object-contain sm:h-16"
+          />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">

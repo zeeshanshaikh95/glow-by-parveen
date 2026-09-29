@@ -1,46 +1,51 @@
-import type { Config } from 'tailwindcss';
-
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        // Glow by Parveen brand palette — pink + white, natural/herbal warmth.
-        // Exact shades to be finalized from the client's logo (PRD §14 / §26).
+        /**
+         * Brand palette derived from the client's official logo.
+         * The logo's own pink (#FFCFED) is brand-200, so tints, surfaces and
+         * floral accents match the logo exactly; brand-600 is the primary
+         * action colour (AA contrast with white text).
+         */
         brand: {
-          50: '#FFF1F5',
-          100: '#FFE4EC',
-          200: '#FECDDC',
-          300: '#FDA4BE',
-          400: '#FB7AA4',
-          500: '#F1518A',
-          600: '#DE3B75',
-          700: '#BC2A5E',
-          800: '#9D2750',
-          900: '#832344',
-          950: '#4E0C24',
+          50: '#FFF6FB',
+          100: '#FFECF7',
+          200: '#FFCFED', // ← sampled from the logo background
+          300: '#FDB4E0',
+          400: '#F98BCB',
+          500: '#F063B2',
+          600: '#CC3374', // primary CTA (4.9:1 on white)
+          700: '#A82A60',
+          800: '#8A2350',
+          900: '#6E1C41',
+          950: '#450E28',
         },
-        // Soft botanical/leaf green accent for "natural/herbal" cues.
+        // Neutral ink scale — near-black text for readability on white.
+        ink: '#141414',
+        'ink-soft': '#5C5C66',
+        // Primary background is white; blush is a whisper-soft pink tint used
+        // to alternate sections without introducing a second background colour.
+        cream: '#FFFFFF',
+        blush: '#FFF6FB',
+        // Botanical accent retained for herbal cues, kept muted and secondary.
         leaf: {
-          50: '#F2F8F1',
-          100: '#E1EEDF',
-          500: '#5F8D62',
-          600: '#4A7450',
-          700: '#3B5E40',
+          50: '#F4F8F3',
+          100: '#E6EFE4',
+          500: '#6C8F6E',
+          600: '#557555',
+          700: '#415C42',
         },
-        cream: '#FFF9F7',
-        blush: '#FFF4F0',
-        ink: '#3D2B2F',
-        'ink-soft': '#7A5F66',
       },
       fontFamily: {
-        // Elegant display serif for headings, readable sans for body (PRD §14).
+        // Elegant display serif for headings, readable sans for body/UI.
         display: ['"Playfair Display"', 'Georgia', 'serif'],
         body: ['"Inter"', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
       },
       boxShadow: {
-        soft: '0 6px 24px -8px rgba(158, 42, 82, 0.16)',
-        card: '0 2px 12px -2px rgba(158, 42, 82, 0.10)',
+        soft: '0 6px 24px -8px rgba(204, 51, 116, 0.18)',
+        card: '0 2px 12px -2px rgba(20, 20, 20, 0.08)',
       },
       borderRadius: {
         blob: '1.75rem',
@@ -67,4 +72,4 @@ export default {
     },
   },
   plugins: [],
-} satisfies Config;
+};

@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { OG_IMAGE_ABSOLUTE, SITE_URL } from '@/lib/brand';
 
 interface Props {
   title: string;
@@ -10,7 +11,6 @@ interface Props {
   noIndex?: boolean;
 }
 
-const SITE_URL = import.meta.env.VITE_PUBLIC_SITE_URL ?? 'http://localhost:5173';
 const SITE_NAME = 'Glow by Parveen';
 
 export function Seo({
@@ -24,6 +24,8 @@ export function Seo({
 }: Props) {
   const fullTitle = title.includes(SITE_NAME) ? title : `${title} · ${SITE_NAME}`;
   const canonical = `${SITE_URL}${canonicalPath ?? ''}`;
+  // Falls back to the brand social image so every page shares something on-brand.
+  const socialImage = imageUrl ?? OG_IMAGE_ABSOLUTE;
 
   return (
     <Helmet>
@@ -36,8 +38,9 @@ export function Seo({
       {description ? <meta property="og:description" content={description} /> : null}
       <meta property="og:type" content={ogType} />
       <meta property="og:url" content={canonical} />
-      {imageUrl ? <meta property="og:image" content={imageUrl} /> : null}
-      <meta name="twitter:card" content={imageUrl ? 'summary_large_image' : 'summary'} />
+      <meta property="og:image" content={socialImage} />
+      <meta name="twitter:image" content={socialImage} />
+      <meta name="twitter:card" content="summary_large_image" />
 
       {noIndex ? <meta name="robots" content="noindex, nofollow" /> : null}
 

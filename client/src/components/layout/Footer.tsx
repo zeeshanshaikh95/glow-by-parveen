@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useSettings } from '@/context/SettingsContext';
 import { WhatsAppGlyph } from '@/components/ProductCard';
+import { LOGO_TRANSPARENT } from '@/lib/brand';
 
 export function Footer() {
   const { settings } = useSettings();
@@ -9,9 +10,14 @@ export function Footer() {
     <footer className="mt-20 border-t border-brand-100 bg-white">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4">
         <div className="md:col-span-2">
-          <p className="font-display text-xl font-bold text-ink">
-            Glow <span className="font-medium text-brand-600">by Parveen</span>
-          </p>
+          <img
+            src={LOGO_TRANSPARENT}
+            alt="Glow by Parveen"
+            width={1080}
+            height={1080}
+            loading="lazy"
+            className="h-24 w-auto object-contain"
+          />
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-ink-soft">
             Handcrafted natural & herbal beauty products. Follow along on Instagram or reach us
             directly on WhatsApp — we're happy to help you choose.

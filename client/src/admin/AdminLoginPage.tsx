@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAdminAuth } from './AdminAuthContext';
+import { LOGO_TRANSPARENT } from '@/lib/brand';
 
 export function AdminLoginPage() {
   const { token, login } = useAdminAuth();
@@ -31,14 +32,15 @@ export function AdminLoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-stone-100 px-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-lg">
         <div className="mb-6 text-center">
-          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-brand-600">
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <circle cx="12" cy="10" r="3" />
-              <path d="M12 13c0 4-2.5 5-2.5 8M12 13c0 4 2.5 5 2.5 8" strokeLinecap="round" />
-            </svg>
-          </span>
+          <img
+            src={LOGO_TRANSPARENT}
+            alt="Glow by Parveen"
+            width={1080}
+            height={1080}
+            className="mx-auto h-28 w-auto object-contain"
+          />
           <h1 className="mt-3 font-display text-xl font-bold text-ink">Admin Login</h1>
-          <p className="mt-1 text-xs text-ink-soft">Glow by Parveen — management area</p>
+          <p className="mt-1 text-xs text-ink-soft">Management area</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4" noValidate>

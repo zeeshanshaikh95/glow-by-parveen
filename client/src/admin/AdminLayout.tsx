@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAdminAuth } from './AdminAuthContext';
+import { LOGO_TRIMMED } from '@/lib/brand';
 
 const NAV = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: 'M4 13h6V4H4v9zm10 7h6v-9h-6v9zM4 20h6v-5H4v5zM14 4v5h6V4h-6z' },
@@ -38,8 +39,11 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                 <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
               </svg>
             </button>
-            <Link to="/admin/dashboard" className="font-display text-base font-bold text-ink">
-              Glow Admin
+            <Link to="/admin/dashboard" className="flex items-center gap-2" aria-label="Glow by Parveen admin home">
+              <img src={LOGO_TRIMMED} alt="" width={824} height={824} className="h-9 w-auto object-contain" />
+              <span className="rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                Admin
+              </span>
             </Link>
           </div>
 
