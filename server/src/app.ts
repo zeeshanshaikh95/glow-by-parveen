@@ -43,7 +43,10 @@ export async function createApp() {
           callback(null, true);
           return;
         }
-        callback(new Error(`Origin ${origin} is not allowed by CORS`));
+        // Not an error: simply omit the CORS headers so the browser blocks the
+        // response. (Origins are compared exactly — see the normalisation in
+        // config/env.ts, which strips trailing slashes.)
+        callback(null, false);
       },
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],

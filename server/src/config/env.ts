@@ -49,7 +49,7 @@ export const config = {
   jwtExpiresIn: optionalEnv('JWT_EXPIRES_IN', '12h'),
   corsOrigins: optionalEnv('CORS_ORIGINS', 'http://localhost:5173')
     .split(',')
-    .map((o) => o.trim())
+    .map((o) => o.trim().replace(/\/+$/, ''))
     .filter(Boolean),
   publicSiteUrl: optionalEnv('PUBLIC_SITE_URL', 'http://localhost:5173'),
   publicApiUrl: optionalEnv('PUBLIC_API_URL', 'http://localhost:4000'),
