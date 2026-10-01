@@ -45,9 +45,11 @@ jobs:
         env:
           # Project pages are served from /<repo>/ — must match the repo name.
           VITE_BASE: /${{ github.event.repository.name }}/
-          # Repository variable overrides this once the API has a public host.
-          # Default falls back to a locally running API (dev demo mode).
-          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'http://localhost:4000' }}
+          # Repository variable holding the deployed API origin. No fallback on
+          # purpose: a production bundle must never embed a localhost API URL.
+          # If the variable is unset the client uses same-origin relative URLs,
+          # which fail loudly instead of silently calling a dev machine.
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
           VITE_PUBLIC_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
         run: npm run build --workspace client
 

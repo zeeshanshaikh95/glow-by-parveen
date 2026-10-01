@@ -70,8 +70,9 @@ every push to `main` that touches the client.
 - **API URL wiring:** set the repository variable `VITE_API_BASE_URL`
   (Settings → Secrets and variables → Actions → Variables) to the Render URL,
   e.g. `https://glow-by-parveen-api.onrender.com`. The workflow passes it to
-  Vite at build time. Until it is set, the site falls back to
-  `http://localhost:4000` (dev demo mode).
+  Vite at build time, and there is deliberately no localhost fallback: an
+  unset variable produces same-origin relative calls (fail loudly) rather than
+  a production bundle that points at a developer machine.
 - SPA deep links resolve through `404.html` (copied by the workflow).
 - `robots.txt` / `sitemap.xml` / static OG tags already point at the Pages URL;
   swap in a custom domain there if one is purchased later.

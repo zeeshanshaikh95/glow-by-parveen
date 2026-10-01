@@ -48,6 +48,11 @@ export async function createApp() {
         // config/env.ts, which strips trailing slashes.)
         callback(null, false);
       },
+      // Required for beacon-style requests: navigator.sendBeacon() always sends
+      // credentialed requests, so the browser rejects the response unless the
+      // header is present. Auth is header-based (JWT), so no cookies/sessions
+      // are involved — this only satisfies the CORS check.
+      credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
       maxAge: 86400,

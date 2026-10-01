@@ -10,7 +10,9 @@ services:
     plan: free
     region: singapore            # closest region to the client's audience
     rootDir: server
-    buildCommand: npm ci && npm run build
+    # MONGOMS_DISABLE_POSTINSTALL skips a ~100 MB dev-only mongod binary that
+    # mongodb-memory-server would otherwise download during the build.
+    buildCommand: MONGOMS_DISABLE_POSTINSTALL=1 npm ci && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
     autoDeploy: true             # redeploy on every push to main
