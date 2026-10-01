@@ -107,6 +107,7 @@ A discreet "Admin Login" link in the public site footer opens the login page.
 | `npm run build` | Typecheck + build both workspaces |
 | `npm run typecheck` | TypeScript project-wide |
 | `npm run seed` / `npm run seed:reset` | Seed database (optionally wiping catalogue data) |
+| `npm run catalogue:import` | Import the client-confirmed products (idempotent, never overwrites; adds them unpublished for review) |
 | `npm run brand:assets -- <logo.png>` | Re-derive brand assets (transparent logo, favicons, OG image) |
 | `node server/scripts/api-smoke.mjs` | End-to-end API test (78 checks: public + admin CRUD + auth + first-login rotation) |
 

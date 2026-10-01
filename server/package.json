@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "seed": "tsx src/seed/seed.ts",
     "seed:reset": "tsx src/seed/seed.ts --reset",
+    "catalogue:import": "tsx src/seed/import-client-catalogue.ts",
     "dev:db": "tsx src/dev/startMongo.ts"
   },
   "dependencies": {

@@ -17,6 +17,7 @@
     "typecheck": "npm run typecheck -w client && npm run typecheck -w server",
     "seed": "npm run seed -w server",
     "seed:reset": "npm run seed:reset -w server",
+    "catalogue:import": "npm run catalogue:import -w server",
     "brand:assets": "node scripts/brand-assets.mjs"
   },
   "devDependencies": {
