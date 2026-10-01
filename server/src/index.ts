@@ -1,5 +1,6 @@
 import { createApp } from './app.js';
 import { config } from './config/env.js';
+import { redactMongoSecrets } from './config/database.js';
 
 /**
  * Optional bootstrap seeding on boot (AUTO_SEED=true — used on managed hosts
@@ -33,6 +34,11 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  console.error('[server] Fatal startup error:', err);
+  // Redact before logging: raw driver errors can quote the full connection
+  // string (with credentials) in their message. Message + stack keep the
+  // failure debuggable without exposing MONGODB_URI.
+  const detail =
+    err instanceof Error ? err.stack ?? err.message : String(err);
+  console.error('[server] Fatal startup error:', redactMongoSecrets(detail));
   process.exit(1);
 });

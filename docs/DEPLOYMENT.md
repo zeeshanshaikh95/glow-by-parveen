@@ -24,8 +24,14 @@ MongoDB Atlas M0 (free, permanent)
      free tier uses rotating egress IPs that cannot be allowlisted individually.
 3. Clusters → **Connect** → *Drivers* → *Node.js* → copy the connection string
    (`mongodb+srv://glowapp:<password>@cluster….mongodb.net`), substitute the
-   generated password, and append the database name:
-   `…mongodb.net/glow-by-parveen?retryWrites=true&w=majority`.
+   generated password (URL-encode it first if it contains any of
+   `@ : / ? # [ ] %`), and append the database name **and `authSource=admin`**:
+   `…mongodb.net/glow-by-parveen?authSource=admin&retryWrites=true&w=majority`.
+   `authSource=admin` is required — Atlas stores database users in `admin`,
+   but a database name in the path makes the driver authenticate against
+   *that* database instead, and Atlas then rejects the login with
+   `code 8000 / bad auth : authentication failed` even though the username
+   and password are correct.
    This becomes `MONGODB_URI` in step 2 — stored only in the Render dashboard,
    never in git.
 
