@@ -14,12 +14,19 @@ MongoDB Atlas M0 (free, permanent)
 
 ## 1. MongoDB Atlas (free M0)
 
-1. Create a free M0 cluster (any region), a database user, and a database named
-   `glow-by-parveen`.
-2. Network access: add `0.0.0.0/0` (Allow access from anywhere) — Render's free
-   tier uses egress IPs that cannot be allowlisted individually.
-3. Copy the connection string (`mongodb+srv://user:pass@cluster…/glow-by-parveen`)
-   → used as `MONGODB_URI` in step 2. It is stored only in the Render dashboard,
+1. Sign up at <https://cloud.mongodb.com> (Google sign-in works) and create a
+   **Free M0** cluster — pick the provider/region closest to the audience.
+   Atlas may call it “Atlas free” / “M0 Sandbox”; both are the free tier.
+2. Atlas’s setup wizard asks for the same two things under **Security**:
+   - **Database Access** → add a user (e.g. `glowapp`) with
+     *Autogenerate Secure Password* — copy the password somewhere safe.
+   - **Network Access** → *Allow access from anywhere* (`0.0.0.0/0`). Render’s
+     free tier uses rotating egress IPs that cannot be allowlisted individually.
+3. Clusters → **Connect** → *Drivers* → *Node.js* → copy the connection string
+   (`mongodb+srv://glowapp:<password>@cluster….mongodb.net`), substitute the
+   generated password, and append the database name:
+   `…mongodb.net/glow-by-parveen?retryWrites=true&w=majority`.
+   This becomes `MONGODB_URI` in step 2 — stored only in the Render dashboard,
    never in git.
 
 ## 2. Backend (Render free web service)
@@ -27,12 +34,15 @@ MongoDB Atlas M0 (free, permanent)
 **Option A — Blueprint (recommended):** Render dashboard → New + → Blueprint →
 pick this repo. Render reads `render.yaml` (rootDir `server`, health check
 `/api/health`, auto-deploy on push). Fill in the `sync: false` values in the
-dashboard: `MONGODB_URI`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `PUBLIC_API_URL`
+dashboard: `MONGODB_URI`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
 (leave JWT_SECRET alone — Render generates it).
 
 **Option B — manual:** create a Web Service with the same settings as the
 blueprint: root directory `server`, build `npm ci && npm run build`, start
 `npm start`, health check `/api/health`, and the env vars below.
+
+The service URL is assigned at creation time (`https://<service>.onrender.com`)
+— no public URL has to be known in advance; the API derives nothing from it.
 
 - **Health check:** `GET /api/health`
 - **Environment variables:**
@@ -43,7 +53,7 @@ blueprint: root directory `server`, build `npm ci && npm run build`, start
 | `JWT_SECRET` | long random string (Render can generate it) |
 | `CORS_ORIGINS` | `https://zeeshanshaikh95.github.io,http://localhost:5173` |
 | `PUBLIC_SITE_URL` | `https://zeeshanshaikh95.github.io/glow-by-parveen` |
-| `PUBLIC_API_URL` | `https://<service>.onrender.com` |
+| `PUBLIC_API_URL` | optional — reserved; the API serves relative `/uploads` URLs and the client resolves them against `VITE_API_BASE_URL` |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | first-admin bootstrap credentials (bcrypt-hashed, never logged; first login forces a password change) |
 | `AUTO_SEED` | `true` — bootstraps admin + settings on boot (idempotent, never touches the catalogue) |
 
