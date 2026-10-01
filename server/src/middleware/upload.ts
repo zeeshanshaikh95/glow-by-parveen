@@ -2,7 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import multer from 'multer';
 import { ApiError } from './errors.js';
-import { config, isProd } from '../config/env.js';
+import { config } from '../config/env.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const uploadsDir = path.resolve(__dirname, '../../uploads');
@@ -38,6 +38,5 @@ export const uploadImage = multer({
 }).array('images', 10);
 
 export function uploadsUrlFor(filename: string): string {
-  const base = isProd ? config.publicApiUrl : '';
   return `${config.uploadsUrlPrefix}/${filename}`;
 }

@@ -4,4 +4,4 @@ Allow: /
 # Admin area should not be indexed
 Disallow: /admin
 
-Sitemap: https://glowbyparveen.example.com/sitemap.xml
+Sitemap: https://zeeshanshaikh95.github.io/glow-by-parveen/sitemap.xml

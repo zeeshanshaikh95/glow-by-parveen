@@ -1,94 +1,25 @@
 /**
- * Database bootstrap.
- *
- * Creates ONLY what the application needs to run:
- *   • the first admin account (from ADMIN_EMAIL / ADMIN_PASSWORD)
- *   • the singleton SiteSettings document with default WhatsApp templates
- *
- * The catalogue is deliberately left EMPTY. No products, categories, reviews,
- * gallery items, prices, ingredients, testimonials or business claims are ever
- * inserted — that content must come from the client, entered through the admin
- * panel. The storefront renders clean empty states until then.
+ * Database bootstrap CLI.
  *
  * Usage:
  *   npm run seed          idempotent — skips whatever already exists
  *   npm run seed:reset    deletes all catalogue content first, then re-bootstraps
  *                         (use to clear test records; the admin account is kept)
+ *
+ * The catalogue is deliberately left EMPTY. No products, categories, reviews,
+ * gallery items, prices, ingredients, testimonials or business claims are ever
+ * inserted — that content must come from the client, entered through the admin
+ * panel. The storefront renders clean empty states until then.
  */
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
-import {
-  AdminUser,
-  Category,
-  GalleryItem,
-  Product,
-  Review,
-  SiteSettings,
-} from '../models/index.js';
+import { Category, GalleryItem, Product, Review } from '../models/index.js';
 import { connectDatabase, disconnectDatabase } from '../config/database.js';
-import { config } from '../config/env.js';
+import { bootstrapAdmin, bootstrapSettings } from './bootstrap.js';
 
 const RESET = process.argv.slice(2).includes('--reset');
 
-const CLIENT_DATA_REQUIRED = '[CLIENT DATA REQUIRED]';
-
-async function seedAdmin() {
-  const existing = await AdminUser.findOne({ email: config.adminEmail });
-  if (existing) {
-    console.log(`• Admin already exists: ${config.adminEmail}`);
-    // Self-heal: if the account still authenticates with the bootstrap password
-    // but the first-login flag was cleared (e.g. by an API smoke run), re-arm it.
-    if (
-      !existing.mustChangePassword &&
-      (await bcrypt.compare(config.adminPassword, existing.passwordHash))
-    ) {
-      existing.mustChangePassword = true;
-      await existing.save();
-      console.log('  ↻ Bootstrap password still in use — first-login password change re-armed.');
-    }
-    return;
-  }
-
-  if (config.adminPassword === '[CHANGE_ME_BEFORE_PRODUCTION]') {
-    console.log(
-      '! ADMIN_PASSWORD is still the placeholder from .env.example — set a real password in server/.env first.'
-    );
-  }
-
-  const passwordHash = await bcrypt.hash(config.adminPassword, 12);
-  await AdminUser.create({
-    email: config.adminEmail,
-    passwordHash,
-    role: 'admin',
-    // Bootstrap credentials (ADMIN_PASSWORD) must be rotated on first login.
-    mustChangePassword: true,
-  });
-  console.log(`✓ Admin created: ${config.adminEmail}`);
-}
-
-async function seedSettings() {
-  const existing = await SiteSettings.findOne();
-  if (existing) {
-    console.log('• Site settings already exist');
-    return;
-  }
-
-  await SiteSettings.create({
-    businessName: 'Glow by Parveen',
-    // Business contact details and brand copy are supplied by the client.
-    whatsappNumber: '',
-    instagramUrl: '',
-    email: '',
-    mapsUrl: '',
-    hero: { headline: '', subheadline: '', imageUrl: '' },
-    about: { intro: '', story: CLIENT_DATA_REQUIRED, founderImageUrl: '' },
-    announcements: { enabled: false, text: '' },
-  });
-  console.log('✓ Site settings created (contact details pending client data)');
-}
-
-/** Removes all catalogue content — never touches AdminUser. */
-async function resetCatalogue() {
+/** Removes all catalogue content — never touches AdminUser or SiteSettings. */
+async function resetCatalogue(): Promise<void> {
   const [products, categories, reviews, gallery] = await Promise.all([
     Product.deleteMany({}),
     Category.deleteMany({}),
@@ -102,15 +33,15 @@ async function resetCatalogue() {
   );
 }
 
-async function main() {
+async function main(): Promise<void> {
   await connectDatabase();
 
   if (RESET) {
     await resetCatalogue();
   }
 
-  await seedAdmin();
-  await seedSettings();
+  await bootstrapAdmin();
+  await bootstrapSettings();
 
   const [products, categories, reviews, gallery] = await Promise.all([
     Product.countDocuments(),
@@ -124,13 +55,11 @@ async function main() {
   console.log(`  categories: ${categories}`);
   console.log(`  reviews: ${reviews}`);
   console.log(`  gallery items: ${gallery}`);
-  console.log(
-    '\nThe catalogue is intentionally empty — add real client content from /admin.\n'
-  );
+  console.log('\nThe catalogue is intentionally empty — add real client content from /admin.\n');
 }
 
 main()
-  .catch((err) => {
+  .catch((err: unknown) => {
     console.error('Seed failed:', err);
     process.exitCode = 1;
   })

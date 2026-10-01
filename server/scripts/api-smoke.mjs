@@ -11,6 +11,15 @@
  *
  * Exits non-zero on the first failed expectation, so it can gate deployments.
  */
+import dotenv from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// Load server/.env (ADMIN_EMAIL / ADMIN_PASSWORD) regardless of the cwd the
+// script is invoked from. Explicit environment variables still take priority.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
 const API_URL = (process.env.API_URL ?? 'http://localhost:4000').replace(/\/$/, '');
 const EMAIL = process.env.ADMIN_EMAIL ?? 'admin@glowbyparveen.com';
 const PASSWORD = process.env.ADMIN_PASSWORD ?? 'GlowDemo!2026';

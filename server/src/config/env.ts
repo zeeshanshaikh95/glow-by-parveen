@@ -55,6 +55,8 @@ export const config = {
   publicApiUrl: optionalEnv('PUBLIC_API_URL', 'http://localhost:4000'),
   adminEmail: optionalEnv('ADMIN_EMAIL', 'admin@glowbyparveen.com'),
   adminPassword: optionalEnv('ADMIN_PASSWORD', '[CHANGE_ME_BEFORE_PRODUCTION]'),
+  /** Run the idempotent bootstrap (admin + settings) on server start. */
+  autoSeed: envValue('AUTO_SEED') === 'true',
   /** Static uploads are served from this route prefix. */
   uploadsUrlPrefix: '/uploads',
 } as const;
