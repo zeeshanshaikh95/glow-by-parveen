@@ -12,7 +12,10 @@ services:
     rootDir: server
     # MONGOMS_DISABLE_POSTINSTALL skips a ~100 MB dev-only mongod binary that
     # mongodb-memory-server would otherwise download during the build.
-    buildCommand: MONGOMS_DISABLE_POSTINSTALL=1 npm ci && npm run build
+    # --include=dev is required: Render sets NODE_ENV=production during builds,
+    # which makes npm ci skip devDependencies (typescript + @types/node) and
+    # fails the tsc build with TS2688 (Cannot find type definition file 'node').
+    buildCommand: MONGOMS_DISABLE_POSTINSTALL=1 npm ci --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
     autoDeploy: true             # redeploy on every push to main

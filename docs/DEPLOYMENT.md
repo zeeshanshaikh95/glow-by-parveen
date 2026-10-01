@@ -38,7 +38,10 @@ dashboard: `MONGODB_URI`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
 (leave JWT_SECRET alone — Render generates it).
 
 **Option B — manual:** create a Web Service with the same settings as the
-blueprint: root directory `server`, build `npm ci && npm run build`, start
+blueprint: root directory `server`, build
+`MONGOMS_DISABLE_POSTINSTALL=1 npm ci --include=dev && npm run build`
+(`--include=dev` is required — Render builds with `NODE_ENV=production`, which
+otherwise skips the TypeScript toolchain), start
 `npm start`, health check `/api/health`, and the env vars below.
 
 The service URL is assigned at creation time (`https://<service>.onrender.com`)
