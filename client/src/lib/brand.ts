@@ -16,6 +16,20 @@ export const LOGO_TRANSPARENT = `${BASE}brand/glow-by-parveen-logo-transparent.p
 /** Background removed + empty padding trimmed — best for small spaces. */
 export const LOGO_TRIMMED = `${BASE}brand/glow-by-parveen-logo-trimmed.png`;
 
+/**
+ * Homepage hero visual (1122×1402 — 4:5, matching the hero container exactly
+ * so it fills without cropping). Client-supplied, so it ships from
+ * client/public rather than the uploads folder.
+ */
+export const HERO_IMAGE = `${BASE}images/hero-skincare.png`;
+
+/**
+ * Founder portrait for the About page (1122×1402 — 4:5, matching the About
+ * card so it fills without cropping the face). Client-supplied, so it ships
+ * from client/public rather than the uploads folder.
+ */
+export const FOUNDER_IMAGE = `${BASE}images/founder-parveen.png`;
+
 /** Social sharing image (1200×630). */
 export const OG_IMAGE = `${BASE}og-image.png`;
 

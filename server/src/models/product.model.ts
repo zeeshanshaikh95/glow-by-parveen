@@ -17,6 +17,8 @@ export interface IProduct {
   size: string;
   category: mongoose.Types.ObjectId | null;
   images: string[];
+  /** Cloudinary public_ids parallel to `images` (derived on save, server-side). */
+  imagePublicIds: string[];
   ingredients: string[];
   benefits: string[];
   howToUse: string;
@@ -52,6 +54,7 @@ const productSchema = new Schema<IProduct>(
     size: { type: String, default: '' },
     category: { type: Schema.Types.ObjectId, ref: 'Category', default: null },
     images: { type: [String], default: [] },
+    imagePublicIds: { type: [String], default: [] },
     ingredients: { type: [String], default: [] },
     benefits: { type: [String], default: [] },
     howToUse: { type: String, default: '' },

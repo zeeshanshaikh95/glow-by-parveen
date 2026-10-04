@@ -26,11 +26,15 @@ export interface ISiteSettings {
     headline: string;
     subheadline: string;
     imageUrl: string;
+    /** Cloudinary public_id for `hero.imageUrl` (derived on save, server-side). */
+    imagePublicId: string;
   };
   about: {
     intro: string;
     story: string;
     founderImageUrl: string;
+    /** Cloudinary public_id for `about.founderImageUrl` (derived on save, server-side). */
+    founderImagePublicId: string;
   };
   announcements: {
     enabled: boolean;
@@ -52,11 +56,13 @@ const siteSettingsSchema = new Schema<ISiteSettings>(
       headline: { type: String, default: '' },
       subheadline: { type: String, default: '' },
       imageUrl: { type: String, default: '' },
+      imagePublicId: { type: String, default: '' },
     },
     about: {
       intro: { type: String, default: '' },
       story: { type: String, default: '' },
       founderImageUrl: { type: String, default: '' },
+      founderImagePublicId: { type: String, default: '' },
     },
     announcements: {
       enabled: { type: Boolean, default: false },

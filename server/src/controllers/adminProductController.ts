@@ -3,6 +3,11 @@ import { ApiError } from '../middleware/errors.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { buildProductFilter, parseProductQuery, productSort } from '../utils/query.js';
 import { productInputSchema, slugify } from '../validation/schemas.js';
+import {
+  publicIdsForUrls,
+  releaseUnusedImages,
+  removedUrls,
+} from '../services/mediaService.js';
 import type { AuthRequest } from '../middleware/auth.js';
 
 /** GET /api/admin/products — includes archived + out-of-stock, supports filters. */
@@ -40,7 +45,13 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res) => {
     throw new ApiError(409, 'A product with this slug already exists');
   }
 
-  const product = await Product.create({ ...data, slug });
+  // Image URLs stay in the existing `images` field; the matching Cloudinary
+  // public_ids are resolved server-side and stored alongside them.
+  const product = await Product.create({
+    ...data,
+    slug,
+    imagePublicIds: await publicIdsForUrls(data.images),
+  });
   res.status(201).json({ product });
 });
 
@@ -65,8 +76,14 @@ export const updateProduct = asyncHandler(async (req: AuthRequest, res) => {
     }
   }
 
-  existing.set({ ...data, slug });
+  const previousImages = [...(existing.images ?? [])];
+  existing.set({ ...data, slug, imagePublicIds: await publicIdsForUrls(data.images) });
   const saved = await existing.save();
+
+  // Replaced images are destroyed only when no document references them any
+  // more (see mediaService.findReferences). Failures are logged, never thrown.
+  await releaseUnusedImages(removedUrls(previousImages, saved.images ?? []));
+
   res.json({ product: saved });
 });
 
@@ -76,6 +93,8 @@ export const deleteProduct = asyncHandler(async (req: AuthRequest, res) => {
   if (!product) {
     throw new ApiError(404, 'Product not found');
   }
+
+  await releaseUnusedImages(product.images ?? []);
   res.json({ ok: true });
 });
 

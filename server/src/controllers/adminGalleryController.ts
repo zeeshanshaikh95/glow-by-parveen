@@ -2,6 +2,7 @@ import { GalleryItem } from '../models/index.js';
 import { ApiError } from '../middleware/errors.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { galleryItemInputSchema } from '../validation/schemas.js';
+import { publicIdForUrl, releaseUnusedImages } from '../services/mediaService.js';
 import type { AuthRequest } from '../middleware/auth.js';
 
 /** GET /api/admin/gallery — all gallery items. */
@@ -17,7 +18,10 @@ export const createGalleryItem = asyncHandler(async (req: AuthRequest, res) => {
     throw new ApiError(400, 'Validation failed', parsed.error.flatten().fieldErrors);
   }
 
-  const item = await GalleryItem.create(parsed.data);
+  const item = await GalleryItem.create({
+    ...parsed.data,
+    imagePublicId: (await publicIdForUrl(parsed.data.image)) ?? '',
+  });
   res.status(201).json({ item });
 });
 
@@ -28,12 +32,20 @@ export const updateGalleryItem = asyncHandler(async (req: AuthRequest, res) => {
     throw new ApiError(400, 'Validation failed', parsed.error.flatten().fieldErrors);
   }
 
-  const item = await GalleryItem.findByIdAndUpdate(req.params.id, parsed.data, {
-    new: true,
-    runValidators: true,
-  });
-  if (!item) {
+  const existing = await GalleryItem.findById(req.params.id);
+  if (!existing) {
     throw new ApiError(404, 'Gallery item not found');
+  }
+
+  const previousImage = existing.image;
+  existing.set({
+    ...parsed.data,
+    imagePublicId: (await publicIdForUrl(parsed.data.image)) ?? '',
+  });
+  const item = await existing.save();
+
+  if (previousImage && previousImage !== item.image) {
+    await releaseUnusedImages([previousImage]);
   }
   res.json({ item });
 });
@@ -43,6 +55,10 @@ export const deleteGalleryItem = asyncHandler(async (req: AuthRequest, res) => {
   const item = await GalleryItem.findByIdAndDelete(req.params.id);
   if (!item) {
     throw new ApiError(404, 'Gallery item not found');
+  }
+
+  if (item.image) {
+    await releaseUnusedImages([item.image]);
   }
   res.json({ ok: true });
 });

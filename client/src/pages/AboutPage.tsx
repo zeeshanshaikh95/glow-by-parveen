@@ -1,8 +1,8 @@
 import { useSettings } from '@/context/SettingsContext';
 import { Seo } from '@/components/seo/Seo';
 import { FloralDivider } from '@/components/FloralDivider';
-import { PlaceholderImage } from '@/components/PlaceholderImage';
 import { Link } from 'react-router-dom';
+import { FOUNDER_IMAGE } from '@/lib/brand';
 
 export function AboutPage() {
   const { settings } = useSettings();
@@ -22,16 +22,15 @@ export function AboutPage() {
           <FloralDivider className="mt-4" />
         </header>
 
-        <div className="mx-auto mt-10 aspect-[4/5] max-w-md overflow-hidden rounded-blob bg-brand-50 shadow-card">
-          {settings.about.founderImageUrl ? (
-            <img
-              src={settings.about.founderImageUrl}
-              alt="Parveen, founder of Glow by Parveen"
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <PlaceholderImage seed="founder" />
-          )}
+        <div className="mx-auto mt-10 aspect-[4/5] w-full max-w-[360px] overflow-hidden rounded-[24px] bg-brand-50 shadow-card">
+          <img
+            src={settings.about.founderImageUrl || FOUNDER_IMAGE}
+            alt="Parveen, founder of Glow by Parveen"
+            width={1122}
+            height={1402}
+            decoding="async"
+            className="h-full w-full object-cover object-[50%_28%]"
+          />
         </div>
 
         <div className="prose-pink mt-10 space-y-5 text-center">

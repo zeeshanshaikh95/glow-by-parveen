@@ -2,6 +2,7 @@ import { Review } from '../models/index.js';
 import { ApiError } from '../middleware/errors.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { reviewInputSchema } from '../validation/schemas.js';
+import { publicIdForUrl, releaseUnusedImages } from '../services/mediaService.js';
 import type { AuthRequest } from '../middleware/auth.js';
 
 /** GET /api/admin/reviews — all reviews incl. pending/hidden. */
@@ -17,7 +18,10 @@ export const createReview = asyncHandler(async (req: AuthRequest, res) => {
     throw new ApiError(400, 'Validation failed', parsed.error.flatten().fieldErrors);
   }
 
-  const review = await Review.create(parsed.data);
+  const review = await Review.create({
+    ...parsed.data,
+    imagePublicId: (await publicIdForUrl(parsed.data.image)) ?? '',
+  });
   res.status(201).json({ review });
 });
 
@@ -28,13 +32,20 @@ export const updateReview = asyncHandler(async (req: AuthRequest, res) => {
     throw new ApiError(400, 'Validation failed', parsed.error.flatten().fieldErrors);
   }
 
-  const review = await Review.findByIdAndUpdate(req.params.id, parsed.data, {
-    new: true,
-    runValidators: true,
-  });
-
-  if (!review) {
+  const existing = await Review.findById(req.params.id);
+  if (!existing) {
     throw new ApiError(404, 'Review not found');
+  }
+
+  const previousImage = existing.image;
+  existing.set({
+    ...parsed.data,
+    imagePublicId: (await publicIdForUrl(parsed.data.image)) ?? '',
+  });
+  const review = await existing.save();
+
+  if (previousImage && previousImage !== review.image) {
+    await releaseUnusedImages([previousImage]);
   }
   res.json({ review });
 });
@@ -44,6 +55,10 @@ export const deleteReview = asyncHandler(async (req: AuthRequest, res) => {
   const review = await Review.findByIdAndDelete(req.params.id);
   if (!review) {
     throw new ApiError(404, 'Review not found');
+  }
+
+  if (review.image) {
+    await releaseUnusedImages([review.image]);
   }
   res.json({ ok: true });
 });

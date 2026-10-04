@@ -2,6 +2,8 @@ import mongoose, { Schema, model, type Model } from 'mongoose';
 
 export interface IGalleryItem {
   image: string;
+  /** Cloudinary public_id for `image` (derived on save, server-side). */
+  imagePublicId: string;
   caption: string;
   externalUrl: string;
   displayOrder: number;
@@ -13,6 +15,7 @@ export interface IGalleryItem {
 const galleryItemSchema = new Schema<IGalleryItem>(
   {
     image: { type: String, required: true },
+    imagePublicId: { type: String, default: '' },
     caption: { type: String, default: '' },
     externalUrl: { type: String, default: '' },
     displayOrder: { type: Number, default: 0 },

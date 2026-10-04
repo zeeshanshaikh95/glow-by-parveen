@@ -7,6 +7,8 @@ export interface IReview {
   rating: number;
   text: string;
   image: string;
+  /** Cloudinary public_id for `image` (derived on save, server-side). */
+  imagePublicId: string;
   status: ReviewStatus;
   displayOrder: number;
   createdAt: Date;
@@ -19,6 +21,7 @@ const reviewSchema = new Schema<IReview>(
     rating: { type: Number, required: true, min: 1, max: 5 },
     text: { type: String, required: true, trim: true },
     image: { type: String, default: '' },
+    imagePublicId: { type: String, default: '' },
     status: { type: String, enum: ['pending', 'approved', 'hidden'], default: 'pending' },
     displayOrder: { type: Number, default: 0 },
   },

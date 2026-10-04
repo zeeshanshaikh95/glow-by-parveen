@@ -1,6 +1,7 @@
 import { createApp } from './app.js';
 import { config } from './config/env.js';
 import { redactMongoSecrets } from './config/database.js';
+import { cloudinaryStatusLine } from './services/cloudinaryService.js';
 
 /**
  * Optional bootstrap seeding on boot (AUTO_SEED=true — used on managed hosts
@@ -30,6 +31,8 @@ async function main(): Promise<void> {
   app.listen(config.port, () => {
     console.log(`[server] Glow by Parveen API listening on port ${config.port}`);
     console.log(`[server] CORS origins: ${config.corsOrigins.join(', ')}`);
+    // Status only — never the key or the secret.
+    console.log(cloudinaryStatusLine());
   });
 }
 

@@ -13,6 +13,9 @@ export type { IAdminUser } from './adminUser.model.js';
 export { GalleryItem } from './galleryItem.model.js';
 export type { IGalleryItem } from './galleryItem.model.js';
 
+export { MediaAsset } from './mediaAsset.model.js';
+export type { IMediaAsset } from './mediaAsset.model.js';
+
 export { AnalyticsEvent } from './analyticsEvent.model.js';
 export type { IAnalyticsEvent, AnalyticsEventType } from './analyticsEvent.model.js';
 

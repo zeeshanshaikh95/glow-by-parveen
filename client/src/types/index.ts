@@ -25,6 +25,8 @@ export interface Product {
   size: string;
   category: CategoryRef | null;
   images: string[];
+  /** Cloudinary public_ids parallel to `images` (set server-side). */
+  imagePublicIds?: string[];
   ingredients: string[];
   benefits: string[];
   howToUse: string;
@@ -47,6 +49,7 @@ export interface Category {
   slug: string;
   description: string;
   image: string;
+  imagePublicId?: string;
   displayOrder: number;
   createdAt: string;
   updatedAt: string;
@@ -60,6 +63,7 @@ export interface Review {
   rating: number;
   text: string;
   image: string;
+  imagePublicId?: string;
   status: ReviewStatus;
   displayOrder: number;
   createdAt: string;
@@ -69,6 +73,7 @@ export interface Review {
 export interface GalleryItem {
   _id: string;
   image: string;
+  imagePublicId?: string;
   caption: string;
   externalUrl: string;
   displayOrder: number;
@@ -92,8 +97,13 @@ export interface PublicSettings {
   mapsUrl: string;
   whatsappTemplate: string;
   whatsappSingleProductTemplate: string;
-  hero: { headline: string; subheadline: string; imageUrl: string };
-  about: { intro: string; story: string; founderImageUrl: string };
+  hero: { headline: string; subheadline: string; imageUrl: string; imagePublicId?: string };
+  about: {
+    intro: string;
+    story: string;
+    founderImageUrl: string;
+    founderImagePublicId?: string;
+  };
   announcements: { enabled: boolean; text: string };
 }
 

@@ -2,6 +2,7 @@ import { Category, Product } from '../models/index.js';
 import { ApiError } from '../middleware/errors.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { categoryInputSchema, slugify } from '../validation/schemas.js';
+import { publicIdForUrl, releaseUnusedImages } from '../services/mediaService.js';
 import type { AuthRequest } from '../middleware/auth.js';
 
 /** GET /api/admin/categories — all categories for management. */
@@ -27,7 +28,11 @@ export const createCategory = asyncHandler(async (req: AuthRequest, res) => {
     throw new ApiError(409, 'A category with this slug already exists');
   }
 
-  const category = await Category.create({ ...data, slug });
+  const category = await Category.create({
+    ...data,
+    slug,
+    imagePublicId: (await publicIdForUrl(data.image)) ?? '',
+  });
   res.status(201).json({ category });
 });
 
@@ -55,8 +60,13 @@ export const updateCategory = asyncHandler(async (req: AuthRequest, res) => {
     }
   }
 
-  existing.set({ ...data, slug });
+  const previousImage = existing.image;
+  existing.set({ ...data, slug, imagePublicId: (await publicIdForUrl(data.image)) ?? '' });
   const saved = await existing.save();
+
+  if (previousImage && previousImage !== saved.image) {
+    await releaseUnusedImages([previousImage]);
+  }
   res.json({ category: saved });
 });
 
@@ -73,6 +83,9 @@ export const deleteCategory = asyncHandler(async (req: AuthRequest, res) => {
   await Product.updateMany({ category: category._id }, { $set: { category: null } });
   await category.deleteOne();
 
+  if (category.image) {
+    await releaseUnusedImages([category.image]);
+  }
   res.json({ ok: true });
 });
 

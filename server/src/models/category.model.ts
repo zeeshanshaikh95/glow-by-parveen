@@ -5,6 +5,8 @@ export interface ICategory {
   slug: string;
   description: string;
   image: string;
+  /** Cloudinary public_id for `image` (derived on save, server-side). */
+  imagePublicId: string;
   displayOrder: number;
   createdAt: Date;
   updatedAt: Date;
@@ -16,6 +18,7 @@ const categorySchema = new Schema<ICategory>(
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
     description: { type: String, default: '' },
     image: { type: String, default: '' },
+    imagePublicId: { type: String, default: '' },
     displayOrder: { type: Number, default: 0 },
   },
   { timestamps: true }

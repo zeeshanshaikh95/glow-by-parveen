@@ -12,6 +12,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { WhatsAppButton } from '@/components/WhatsAppButton';
 import { trackEvent } from '@/lib/analytics';
 import { truncate } from '@/lib/format';
+import { HERO_IMAGE } from '@/lib/brand';
 
 export function HomePage() {
   const { settings } = useSettings();
@@ -77,16 +78,15 @@ export function HomePage() {
               </p>
             </div>
 
-            <div className="relative hidden aspect-[4/5] overflow-hidden rounded-blob shadow-soft md:block">
-              {settings.hero.imageUrl ? (
-                <img
-                  src={settings.hero.imageUrl}
-                  alt="Glow by Parveen hero"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <PlaceholderImage seed="hero" />
-              )}
+            <div className="relative aspect-[4/5] overflow-hidden rounded-blob bg-blush shadow-soft">
+              <img
+                src={settings.hero.imageUrl || HERO_IMAGE}
+                alt="Glow by Parveen handcrafted skincare — creams, serums and herbal oils styled with fresh roses"
+                width={1122}
+                height={1402}
+                loading="eager"
+                className="h-full w-full object-cover object-center"
+              />
             </div>
           </div>
         </div>

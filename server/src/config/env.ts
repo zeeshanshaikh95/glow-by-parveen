@@ -59,6 +59,32 @@ export const config = {
   autoSeed: envValue('AUTO_SEED') === 'true',
   /** Static uploads are served from this route prefix. */
   uploadsUrlPrefix: '/uploads',
+  /**
+   * Cloudinary image storage. All three credentials are server-only secrets
+   * and are read here, once: the API secret is never sent to the client, never
+   * logged and never embedded in a response payload.
+   */
+  cloudinary: {
+    cloudName: envValue('CLOUDINARY_CLOUD_NAME'),
+    apiKey: envValue('CLOUDINARY_API_KEY'),
+    apiSecret: envValue('CLOUDINARY_API_SECRET'),
+    /** Folder new assets are uploaded into inside the Cloudinary account. */
+    folder: optionalEnv('CLOUDINARY_FOLDER', 'glow-by-parveen'),
+  },
+  /** Hard limits enforced before anything touches Cloudinary. */
+  upload: {
+    maxBytes: numberEnv('UPLOAD_MAX_BYTES', 8 * 1024 * 1024),
+    maxFiles: numberEnv('UPLOAD_MAX_FILES', 10),
+  },
 } as const;
 
 export const isProd = config.env === 'production';
+
+/**
+ * Cloudinary is optional: when any of the three credentials is missing the API
+ * keeps working and uploads fall back to local-disk storage (the pre-existing
+ * behaviour). This lets local dev and un-migrated hosts run unchanged.
+ */
+export const isCloudinaryConfigured = Boolean(
+  config.cloudinary.cloudName && config.cloudinary.apiKey && config.cloudinary.apiSecret
+);

@@ -5,7 +5,16 @@ import {
   requirePasswordChanged,
   type AuthRequest,
 } from '../middleware/auth.js';
-import { uploadImage, uploadsUrlFor } from '../middleware/upload.js';
+import {
+  assertUploadedImagesValid,
+  handleImageUpload,
+  MAX_UPLOAD_MB,
+  UPLOAD_TYPES_LABEL,
+  uploadsUrlFor,
+} from '../middleware/upload.js';
+import { config, isCloudinaryConfigured } from '../config/env.js';
+import { uploadImageBuffer } from '../services/cloudinaryService.js';
+import { recordUpload, releaseUnusedImage, urlForPublicId } from '../services/mediaService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../middleware/errors.js';
 import {
@@ -90,25 +99,101 @@ router.put('/gallery/:id', updateGalleryItem);
 router.delete('/gallery/:id', deleteGalleryItem);
 
 // ── Uploads ─────────────────────────────────────────────────────
+// Admin JWT + completed password change required (mounted above). Files are
+// validated here and pushed to Cloudinary with the server-side credentials;
+// the browser never sees the API key or secret.
 router.post(
   '/uploads',
   uploadLimiter,
-  (req, res, next) => {
-    uploadImage(req, res, (err) => {
-      if (err) {
-        next(err);
-        return;
-      }
-      next();
-    });
-  },
-  asyncHandler(async (req, res) => {
-    const files = req.files as Express.Multer.File[] | undefined;
-    if (!files?.length) {
+  handleImageUpload,
+  asyncHandler(async (req: AuthRequest, res) => {
+    const files = (req.files as Express.Multer.File[] | undefined) ?? [];
+    if (!files.length) {
       throw new ApiError(400, 'No images were uploaded');
     }
-    const urls = files.map((f) => uploadsUrlFor(f.filename));
-    res.status(201).json({ urls });
+
+    if (isCloudinaryConfigured) {
+      assertUploadedImagesValid(files);
+
+      const images = [];
+      try {
+        for (const file of files) {
+          const uploaded = await uploadImageBuffer(file.buffer, file.originalname);
+          images.push(await recordUpload(uploaded, req.admin?.id ?? null));
+        }
+      } catch (err) {
+        // Roll back a partially stored batch so a failed request never leaves
+        // orphaned (billable) assets behind. Each rollback is best-effort.
+        for (const image of images) {
+          try {
+            await releaseUnusedImage(image.url);
+          } catch {
+            /* leave it; the asset is unreferenced and can be cleaned up later */
+          }
+        }
+        throw err;
+      }
+      // `urls` kept for backward compatibility; `images` carries the public_id.
+      res.status(201).json({
+        images,
+        urls: images.map((image) => image.url),
+        provider: 'cloudinary',
+        limits: { maxBytes: config.upload.maxBytes, maxFiles: config.upload.maxFiles },
+      });
+      return;
+    }
+
+    // No Cloudinary credentials configured — keep the original disk behaviour.
+    const urls = files.map((file) => uploadsUrlFor(file.filename));
+    res.status(201).json({
+      images: urls.map((url) => ({ url, publicId: '' })),
+      urls,
+      provider: 'local',
+      limits: { maxBytes: config.upload.maxBytes, maxFiles: config.upload.maxFiles },
+    });
+  })
+);
+
+/**
+ * Deletes a Cloudinary asset — but only when nothing in the database
+ * references it any more. Legacy /uploads files are never touched.
+ */
+router.delete(
+  '/uploads',
+  uploadLimiter,
+  asyncHandler(async (req, res) => {
+    const body = (req.body ?? {}) as { url?: unknown; publicId?: unknown };
+    const url = typeof body.url === 'string' ? body.url.trim() : '';
+    const publicId = typeof body.publicId === 'string' ? body.publicId.trim() : '';
+
+    if (!url && !publicId) {
+      throw new ApiError(400, 'Provide the image url (or publicId) to delete');
+    }
+
+    const result = url
+      ? await releaseUnusedImage(url)
+      : await releaseUnusedImage((await urlForPublicId(publicId)) ?? '');
+
+    if (result.reason === 'still_referenced') {
+      throw new ApiError(
+        409,
+        'This image is still used elsewhere in the catalogue, so it was not deleted.'
+      );
+    }
+    if (result.reason === 'not_a_cloudinary_asset') {
+      throw new ApiError(
+        400,
+        `Only Cloudinary images can be deleted from storage. Local ${config.uploadsUrlPrefix}/ files are left untouched.`
+      );
+    }
+    if (result.reason === 'unable_to_resolve_public_id') {
+      throw new ApiError(
+        409,
+        'Cloudinary public_id could not be resolved for this image, so it was left untouched.'
+      );
+    }
+
+    res.json({ ok: true, url: result.url, released: result.released, reason: result.reason });
   })
 );
 
