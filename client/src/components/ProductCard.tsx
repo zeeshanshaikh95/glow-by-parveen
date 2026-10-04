@@ -66,12 +66,15 @@ export function ProductCard({ product }: Props) {
 
         <p className="text-base font-semibold text-brand-700">{formatPrice(product.price)}</p>
 
-        <div className="mt-auto flex gap-2 pt-2">
+        {/* Stacked on narrow phones: inside a 2-column card two side-by-side
+            buttons cannot fit "Add to Cart" below ~640px, and flex-shrinking
+            wrapped the label onto four lines. From sm up the row is unchanged. */}
+        <div className="mt-auto flex flex-col gap-2 pt-2 sm:flex-row">
           <button
             type="button"
             disabled={outOfStock}
             onClick={() => addItem(product)}
-            className="btn-outline flex-1 !px-3 !py-2 text-xs"
+            className="btn-outline w-full whitespace-nowrap !px-3 !py-2 text-xs sm:w-auto sm:flex-1"
           >
             Add to Cart
           </button>
@@ -81,14 +84,17 @@ export function ProductCard({ product }: Props) {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => trackEvent({ type: 'whatsapp_click', productSlug: product.slug })}
-              className="btn-whatsapp !px-3 !py-2 text-xs"
+              className="btn-whatsapp w-full whitespace-nowrap !px-3 !py-2 text-xs sm:w-auto sm:flex-1"
               aria-label={`Order ${product.name} on WhatsApp`}
             >
               <WhatsAppGlyph className="h-4 w-4" />
               Order
             </a>
           ) : (
-            <Link to={`/product/${product.slug}`} className="btn-ghost !px-3 !py-2 text-xs">
+            <Link
+              to={`/product/${product.slug}`}
+              className="btn-ghost w-full whitespace-nowrap !px-3 !py-2 text-xs sm:w-auto sm:flex-1"
+            >
               Details
             </Link>
           )}

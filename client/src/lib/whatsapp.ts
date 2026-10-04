@@ -62,12 +62,19 @@ export function normalizeWhatsAppNumber(raw: string): string {
 }
 
 /**
- * Returns a wa.me deep link, or null when the business number is not
- * configured yet (admin must set it in Admin → Settings).
+ * Returns an official WhatsApp Click-to-Chat link, or null when the business
+ * number is not configured yet (admin must set it in Admin → Settings).
+ *
+ * `api.whatsapp.com/send` is the endpoint that `wa.me/<number>` redirects to.
+ * Linking it directly skips the redirect hop, which is what makes the tap open
+ * the WhatsApp app on a phone and WhatsApp Web on a desktop instead of
+ * lingering on a blank page. The number and message are unchanged.
  */
 export function buildWhatsAppLink(settings: PublicSettings, message: string): string | null {
   const number = normalizeWhatsAppNumber(settings.whatsappNumber ?? '');
   if (!number) return null;
+  // An empty message would open a chat with no order details — never send one.
+  if (!message.trim()) return null;
   const text = encodeURIComponent(message);
-  return `https://wa.me/${number}?text=${text}`;
+  return `https://api.whatsapp.com/send?phone=${number}&text=${text}`;
 }
