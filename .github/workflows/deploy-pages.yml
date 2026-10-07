@@ -43,8 +43,11 @@ jobs:
 
       - name: Build client
         env:
-          # Project pages are served from /<repo>/ — must match the repo name.
-          VITE_BASE: /${{ github.event.repository.name }}/
+          # The site is served from the ROOT of the custom domain
+          # (https://glowbyparveen.store/), so built asset URLs must be
+          # root-relative. Using the old /<repo>/ project-site prefix here makes
+          # every asset 404 and leaves a blank page.
+          VITE_BASE: /
           # Repository variable holding the deployed API origin. No fallback on
           # purpose: a production bundle must never embed a localhost API URL.
           # If the variable is unset the client uses same-origin relative URLs,
